@@ -81,6 +81,7 @@ export enum Permission {
 
 export type ApplicantType = 'PrimaryApplicant' | 'SecondaryApplicant';
 export type EmploymentType = 'PrimaryEmployment' | 'SecondaryEmployment';
+export type Relation = 'Spouse' | 'Child' | 'Parent' | 'Other';
 export type LoanType =
   | 'PersonalLoan'
   | 'HomeLoan'
@@ -117,6 +118,23 @@ export interface PersonalDetails {
   tax_id: string;
   iban: string;
   housing: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+// =====================
+// FAMILY MEMBERS SECTION
+// =====================
+
+export interface FamilyMember {
+  family_member_id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  relation: Relation;
+  birth_date: string; // ISO string
+  nationality: string;
+  tax_id?: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -223,6 +241,7 @@ export interface Person {
   expensesDetails: ExpensesDetails[];
   assets: Asset[];
   liabilities: Liability[];
+  familyMembers: FamilyMember[];
 }
 
 // =====================

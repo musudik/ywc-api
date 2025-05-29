@@ -57,6 +57,20 @@ CREATE TABLE IF NOT EXISTS personal_details (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Family Members Table (User's family information)
+CREATE TABLE IF NOT EXISTS family_members (
+    family_member_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    relation VARCHAR(20) CHECK (relation IN ('Spouse', 'Child', 'Parent', 'Other')) NOT NULL,
+    birth_date DATE NOT NULL,
+    nationality VARCHAR(100) NOT NULL,
+    tax_id VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Employment Details Table
 CREATE TABLE IF NOT EXISTS employment_details (
     employment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -148,6 +162,10 @@ CREATE INDEX IF NOT EXISTS idx_personal_details_user_id ON personal_details(user
 CREATE INDEX IF NOT EXISTS idx_personal_details_coach_id ON personal_details(coach_id);
 CREATE INDEX IF NOT EXISTS idx_personal_details_email ON personal_details(email);
 
+-- Family members indexes
+CREATE INDEX IF NOT EXISTS idx_family_members_user_id ON family_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_family_members_relation ON family_members(relation);
+
 -- Financial data indexes
 CREATE INDEX IF NOT EXISTS idx_employment_details_user_id ON employment_details(user_id);
 CREATE INDEX IF NOT EXISTS idx_income_details_user_id ON income_details(user_id);
@@ -171,6 +189,7 @@ $$ language 'plpgsql';
 -- Create triggers for all tables with updated_at
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_personal_details_updated_at BEFORE UPDATE ON personal_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_family_members_updated_at BEFORE UPDATE ON family_members FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_employment_details_updated_at BEFORE UPDATE ON employment_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_income_details_updated_at BEFORE UPDATE ON income_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_expenses_details_updated_at BEFORE UPDATE ON expenses_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -187,6 +206,10 @@ COMMENT ON COLUMN users.coach_id IS 'Self-referencing foreign key to create coac
 COMMENT ON TABLE personal_details IS 'User profile and personal information';
 COMMENT ON COLUMN personal_details.user_id IS 'References the user who owns this personal data';
 COMMENT ON COLUMN personal_details.coach_id IS 'References the coach who manages this client';
+
+COMMENT ON TABLE family_members IS 'Family member information for users';
+COMMENT ON COLUMN family_members.user_id IS 'References the user who owns this family member data';
+COMMENT ON COLUMN family_members.relation IS 'Relationship type: Spouse, Child, Parent, or Other';
 
 COMMENT ON TABLE employment_details IS 'User employment information';
 COMMENT ON TABLE income_details IS 'User income information (German tax system)';

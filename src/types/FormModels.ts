@@ -11,7 +11,7 @@ export type LoanType =
   | 'BusinessLoan'
   | 'EducationLoan'
   | 'OtherLoan';
-
+export type Relation = 'Spouse' | 'Child' | 'Parent' | 'Other';
 // =====================
 // Personal Details
 // =====================
@@ -29,6 +29,16 @@ export interface FamilyDetails {
   birthDate: string;
   nationality: string;
   children: Children[];
+}
+
+export interface FamilyMember {
+  firstName: string;
+  lastName: string;
+  relation: Relation;
+  birthDate: string; // ISO string
+  nationality: string;
+  taxId: string;
+  personalId: string;
 }
 
 export interface PersonalDetails {
@@ -54,7 +64,7 @@ export interface PersonalDetails {
   taxId: string;
   IBAN: string;
   housing: string;
-  family: FamilyDetails;
+  family: FamilyMember[];
 }
 
 // =====================

@@ -11,6 +11,7 @@ import incomeRoutes from './routes/incomeRoutes';
 import expensesRoutes from './routes/expensesRoutes';
 import assetRoutes from './routes/assetRoutes';
 import liabilityRoutes from './routes/liabilityRoutes';
+import familyMemberRoutes from './routes/familyMemberRoutes';
 import personRoutes from './routes/personRoutes';
 
 // Load environment variables
@@ -42,6 +43,7 @@ app.get('/', (req, res) => {
       expenses: '/api/expenses',
       assets: '/api/assets',
       liabilities: '/api/liabilities',
+      familyMembers: '/api/family-members',
       person: '/api/person',
       user: '/api/user',
       health: '/health'
@@ -68,6 +70,7 @@ app.use('/api/income', incomeRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/liabilities', liabilityRoutes);
+app.use('/api/family-members', familyMemberRoutes);
 app.use('/api/person', personRoutes);
 app.use('/api/user', personRoutes);
 

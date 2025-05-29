@@ -1,11 +1,12 @@
 import { pool } from '../config/db';
-import { Person, PersonalDetails, EmploymentDetails, IncomeDetails, ExpensesDetails, Asset, Liability } from '../types';
+import { Person, PersonalDetails, EmploymentDetails, IncomeDetails, ExpensesDetails, Asset, Liability, FamilyMember } from '../types';
 import { PersonalDetailsService } from './personalDetailsService';
 import { EmploymentService } from './employmentService';
 import { IncomeService } from './incomeService';
 import { ExpensesService } from './expensesService';
 import { AssetService } from './assetService';
 import { LiabilityService } from './liabilityService';
+import { FamilyMemberService } from './familyMemberService';
 
 export class PersonService {
   private personalDetailsService = new PersonalDetailsService();
@@ -14,6 +15,7 @@ export class PersonService {
   private expensesService = new ExpensesService();
   private assetService = new AssetService();
   private liabilityService = new LiabilityService();
+  private familyMemberService = new FamilyMemberService();
 
   // Get complete person profile by user_id
   async getCompletePersonProfile(userId: string): Promise<Person | null> {
@@ -31,13 +33,15 @@ export class PersonService {
         incomeDetails,
         expensesDetails,
         assets,
-        liabilities
+        liabilities,
+        familyMembers
       ] = await Promise.all([
         this.employmentService.getEmploymentDetailsByUserId(userId),
         this.incomeService.getIncomeDetailsByUserId(userId),
         this.expensesService.getExpensesDetailsByUserId(userId),
         this.assetService.getAssetsByUserId(userId),
-        this.liabilityService.getLiabilitiesByUserId(userId)
+        this.liabilityService.getLiabilitiesByUserId(userId),
+        this.familyMemberService.getFamilyMembersByUserId(userId)
       ]);
 
       const person: Person = {
@@ -46,7 +50,8 @@ export class PersonService {
         incomeDetails,
         expensesDetails,
         assets,
-        liabilities
+        liabilities,
+        familyMembers
       };
 
       return person;
