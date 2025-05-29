@@ -138,4 +138,24 @@ export class PersonController {
       });
     }
   }
+
+  // Get all coach's by role
+  async getUsersByRole(req: Request, res: Response): Promise<void> {
+    try {
+      const { role } = req.params;
+      const coaches = await personService.getUsersByRole(role);
+      res.status(200).json({
+        success: true,
+        message: 'Coaches retrieved successfully',
+        data: coaches
+      });
+    } catch (error: any) {
+      console.error('Error fetching coaches:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch coaches',
+        error: error.message
+      });
+    }
+  }
 } 

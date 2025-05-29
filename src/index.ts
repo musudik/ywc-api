@@ -43,6 +43,7 @@ app.get('/', (req, res) => {
       assets: '/api/assets',
       liabilities: '/api/liabilities',
       person: '/api/person',
+      user: '/api/user',
       health: '/health'
     }
   });
@@ -68,6 +69,7 @@ app.use('/api/expenses', expensesRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/liabilities', liabilityRoutes);
 app.use('/api/person', personRoutes);
+app.use('/api/user', personRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -8,6 +8,12 @@ const personController = new PersonController();
 // All routes require authentication
 router.use(authenticate);
 
+// Get users by role (for accessing /api/person/user/users/:role)
+router.get('/user/users/:role', personController.getUsersByRole.bind(personController));
+
+// Get users by role (alternative route for /api/person/users/:role)
+router.get('/users/:role', personController.getUsersByRole.bind(personController));
+
 // Person Routes (aggregated data)
 router.get('/user/:userId/complete', personController.getCompletePersonProfile.bind(personController));
 router.get('/user/:userId/summary', personController.getPersonSummary.bind(personController));

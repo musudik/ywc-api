@@ -254,7 +254,7 @@ export class AuthService {
   async getCoachClients(coachId: string): Promise<any[]> {
     const query = `
       SELECT 
-        pd.personal_id,
+        pd.user_id,
         pd.first_name,
         pd.last_name,
         pd.email,

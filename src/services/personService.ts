@@ -231,4 +231,16 @@ export class PersonService {
       throw new Error(`Failed to calculate financial summary: ${error.message}`);
     }
   }
+
+  // Get users by role
+  async getUsersByRole(role: string) {
+    try {
+      const query = 'SELECT * FROM users WHERE role = $1';
+      const result = await pool.query(query, [role]);
+      return result.rows;
+    } catch (error: any) {
+      console.error('Error fetching coaches:', error);
+      throw new Error(`Failed to fetch coaches: ${error.message}`);
+    }
+  }
 } 
