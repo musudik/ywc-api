@@ -1,0 +1,746 @@
+{
+	"info": {
+		"_postman_id": "ywc-financial-forms-api",
+		"name": "YWC Financial Forms API",
+		"description": "Complete API collection for YWC Financial Forms platform with FormModels structure and JWT authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "ywc-api"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save token for subsequent requests",
+									"if (pm.response.code === 200 && pm.response.json().success) {",
+									"    const responseData = pm.response.json().data;",
+									"    if (responseData.token) {",
+									"        pm.collectionVariables.set('auth_token', responseData.token);",
+									"        console.log('Auth token saved:', responseData.token.substring(0, 20) + '...');",
+									"    }",
+									"    if (responseData.user) {",
+									"        pm.collectionVariables.set('user_id', responseData.user.id);",
+									"        pm.collectionVariables.set('user_role', responseData.user.role);",
+									"        console.log('User info saved:', responseData.user.email, responseData.user.role);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"coach@ywc.com\",\n  \"password\": \"coach123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password to get JWT token"
+					}
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@ywc.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"New\",\n  \"last_name\": \"User\",\n  \"role\": \"CLIENT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account"
+					}
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current user profile information"
+					}
+				},
+				{
+					"name": "Get My Clients",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me/clients",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me",
+								"clients"
+							]
+						},
+						"description": "Get list of clients for coaches (coaches and admins only)"
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{auth_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh JWT token"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout user (clears client-side token)"
+					}
+				}
+			],
+			"description": "Authentication endpoints for login, registration, and token management"
+		},
+		{
+			"name": "Basic Endpoints",
+			"item": [
+				{
+					"name": "Welcome Message",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Get welcome message and API information"
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check API health status and database connection"
+					}
+				}
+			],
+			"description": "Basic API endpoints for welcome and health check"
+		},
+		{
+			"name": "Personal Details",
+			"item": [
+				{
+					"name": "Create Personal Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{user_id}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"street\": \"Hauptstraße\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"10115\",\n  \"city\": \"Berlin\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+49 30 12345678\",\n  \"whatsapp\": \"+49 30 12345678\",\n  \"marital_status\": \"married\",\n  \"birth_date\": \"1985-06-15\",\n  \"birth_place\": \"Hamburg\",\n  \"nationality\": \"German\",\n  \"residence_permit\": \"German Passport\",\n  \"eu_citizen\": true,\n  \"tax_id\": \"12345678901\",\n  \"iban\": \"DE89370400440532013000\",\n  \"housing\": \"owner\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/personal-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						},
+						"description": "Create new personal details record (requires authentication)"
+					}
+				},
+				{
+					"name": "Get All Personal Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/personal-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						},
+						"description": "Retrieve all personal details records (admin/coach only)"
+					}
+				},
+				{
+					"name": "Get Personal Details by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/personal-details/{{personal_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personal_uuid}}"
+							]
+						},
+						"description": "Retrieve personal details by specific ID (requires proper access)"
+					}
+				},
+				{
+					"name": "Get Personal Details by Coach ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/personal-details/coach/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"coach",
+								"{{user_id}}"
+							]
+						},
+						"description": "Retrieve all personal details managed by a specific coach"
+					}
+				},
+				{
+					"name": "Update Personal Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Johnathan\",\n  \"last_name\": \"Doe\",\n  \"email\": \"johnathan.doe@example.com\",\n  \"phone\": \"+49 30 87654321\",\n  \"marital_status\": \"divorced\",\n  \"housing\": \"renter\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/personal-details/{{personal_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personal_uuid}}"
+							]
+						},
+						"description": "Update existing personal details record (requires proper access)"
+					}
+				},
+				{
+					"name": "Delete Personal Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/personal-details/{{personal_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personal_uuid}}"
+							]
+						},
+						"description": "Delete personal details record (admin/coach only)"
+					}
+				}
+			],
+			"description": "Personal details management endpoints (authentication required)"
+		},
+		{
+			"name": "Employment Details",
+			"item": [
+				{
+					"name": "Create Employment Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_uuid}}\",\n  \"employment_type\": \"PrimaryEmployment\",\n  \"occupation\": \"Software Engineer\",\n  \"contract_type\": \"Permanent\",\n  \"contract_duration\": \"Unlimited\",\n  \"employer_name\": \"Tech Solutions GmbH\",\n  \"employed_since\": \"2020-03-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment"
+							]
+						},
+						"description": "Create new employment details record (admin/coach only)"
+					}
+				},
+				{
+					"name": "Create Secondary Employment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_uuid}}\",\n  \"employment_type\": \"SecondaryEmployment\",\n  \"occupation\": \"Freelance Consultant\",\n  \"contract_type\": \"Contract\",\n  \"contract_duration\": \"6 months\",\n  \"employer_name\": \"Digital Consulting Ltd\",\n  \"employed_since\": \"2023-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment"
+							]
+						},
+						"description": "Create secondary employment details record (admin/coach only)"
+					}
+				},
+				{
+					"name": "Get Employment Details by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employment/{{employment_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment",
+								"{{employment_uuid}}"
+							]
+						},
+						"description": "Retrieve employment details by specific ID (requires authentication)"
+					}
+				},
+				{
+					"name": "Get Employment by Personal ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employment/personal/{{personal_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment",
+								"personal",
+								"{{personal_uuid}}"
+							]
+						},
+						"description": "Retrieve all employment records for a specific person (requires proper access)"
+					}
+				},
+				{
+					"name": "Update Employment Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"occupation\": \"Senior Software Engineer\",\n  \"contract_type\": \"Permanent\",\n  \"employer_name\": \"Advanced Tech Solutions GmbH\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employment/{{employment_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment",
+								"{{employment_uuid}}"
+							]
+						},
+						"description": "Update existing employment details record (admin/coach only)"
+					}
+				},
+				{
+					"name": "Delete Employment Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employment/{{employment_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employment",
+								"{{employment_uuid}}"
+							]
+						},
+						"description": "Delete employment details record (admin/coach only)"
+					}
+				}
+			],
+			"description": "Employment details management endpoints (authentication required)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set dynamic variables if not already set",
+					"if (!pm.collectionVariables.get('base_url')) {",
+					"    pm.collectionVariables.set('base_url', 'http://localhost:3000');",
+					"}",
+					"",
+					"// Generate UUIDs for testing if not set",
+					"if (!pm.collectionVariables.get('coach_uuid')) {",
+					"    pm.collectionVariables.set('coach_uuid', '123e4567-e89b-12d3-a456-426614174001');",
+					"}",
+					"",
+					"if (!pm.collectionVariables.get('personal_uuid')) {",
+					"    pm.collectionVariables.set('personal_uuid', '123e4567-e89b-12d3-a456-426614174002');",
+					"}",
+					"",
+					"if (!pm.collectionVariables.get('employment_uuid')) {",
+					"    pm.collectionVariables.set('employment_uuid', '123e4567-e89b-12d3-a456-426614174003');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Common test for all requests",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Extract IDs from successful creation responses",
+					"if (pm.response.code === 201 && pm.response.json().success) {",
+					"    const responseData = pm.response.json().data;",
+					"    ",
+					"    if (responseData.personal_id) {",
+					"        pm.collectionVariables.set('personal_uuid', responseData.personal_id);",
+					"        console.log('Saved personal_id:', responseData.personal_id);",
+					"    }",
+					"    ",
+					"    if (responseData.employment_id) {",
+					"        pm.collectionVariables.set('employment_uuid', responseData.employment_id);",
+					"        console.log('Saved employment_id:', responseData.employment_id);",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_role",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coach_uuid",
+			"value": "123e4567-e89b-12d3-a456-426614174001",
+			"type": "string"
+		},
+		{
+			"key": "personal_uuid",
+			"value": "123e4567-e89b-12d3-a456-426614174002",
+			"type": "string"
+		},
+		{
+			"key": "employment_uuid",
+			"value": "123e4567-e89b-12d3-a456-426614174003",
+			"type": "string"
+		}
+	]
+} 

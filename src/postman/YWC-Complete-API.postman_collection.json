@@ -1,0 +1,772 @@
+{
+	"info": {
+		"_postman_id": "ywc-complete-financial-api",
+		"name": "YWC Complete Financial API",
+		"description": "Complete API collection for YWC Financial Forms platform with all financial data endpoints and JWT authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "ywc-complete-api"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-login if no token exists",
+					"if (!pm.collectionVariables.get('auth_token')) {",
+					"    console.log('No auth token found, attempting auto-login...');",
+					"    pm.sendRequest({",
+					"        url: pm.collectionVariables.get('base_url') + '/api/auth/login',",
+					"        method: 'POST',",
+					"        header: {'Content-Type': 'application/json'},",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify({",
+					"                email: 'coach@ywc.com',",
+					"                password: 'coach123'",
+					"            })",
+					"        }",
+					"    }, function (err, response) {",
+					"        if (response && response.json().success) {",
+					"            const token = response.json().data.token;",
+					"            pm.collectionVariables.set('auth_token', token);",
+					"            console.log('Auto-login successful');",
+					"        }",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "personal_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coach_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 && pm.response.json().success) {",
+									"    const responseData = pm.response.json().data;",
+									"    if (responseData.token) {",
+									"        pm.collectionVariables.set('auth_token', responseData.token);",
+									"        console.log('Auth token saved');",
+									"    }",
+									"    if (responseData.user) {",
+									"        pm.collectionVariables.set('coach_id', responseData.user.id);",
+									"        console.log('Coach ID saved:', responseData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"coach@ywc.com\",\n  \"password\": \"coach123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Personal Details",
+			"item": [
+				{
+					"name": "Create Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    const personalId = pm.response.json().data.personal_id;",
+									"    pm.collectionVariables.set('personal_id', personalId);",
+									"    console.log('Personal ID saved:', personalId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coach_id}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr.\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"street\": \"Main Street\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"12345\",\n  \"city\": \"Berlin\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+49123456789\",\n  \"whatsapp\": \"+49123456789\",\n  \"marital_status\": \"Single\",\n  \"birth_date\": \"1990-01-01\",\n  \"birth_place\": \"Berlin\",\n  \"nationality\": \"German\",\n  \"residence_permit\": \"EU Citizen\",\n  \"eu_citizen\": true,\n  \"tax_id\": \"12345678901\",\n  \"iban\": \"DE89370400440532013000\",\n  \"housing\": \"Rent\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/personal-details",
+							"host": ["{{base_url}}"],
+							"path": ["api", "personal-details"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Employment Details",
+			"item": [
+				{
+					"name": "Create Employment Details",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"employment_type\": \"PrimaryEmployment\",\n  \"occupation\": \"Software Engineer\",\n  \"contract_type\": \"Permanent\",\n  \"contract_duration\": \"Unlimited\",\n  \"employer_name\": \"Tech Company GmbH\",\n  \"employed_since\": \"2020-01-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employment"]
+						}
+					}
+				},
+				{
+					"name": "Get Employment by Personal ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/employment/personal/{{personal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employment", "personal", "{{personal_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Income Details",
+			"item": [
+				{
+					"name": "Create Income Details",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"gross_income\": 5000.00,\n  \"net_income\": 3500.00,\n  \"tax_class\": \"1\",\n  \"tax_id\": \"12345678901\",\n  \"number_of_salaries\": 12,\n  \"child_benefit\": 200.00,\n  \"other_income\": 500.00,\n  \"income_trade_business\": 0.00,\n  \"income_self_employed_work\": 1000.00,\n  \"income_side_job\": 300.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/income",
+							"host": ["{{base_url}}"],
+							"path": ["api", "income"]
+						}
+					}
+				},
+				{
+					"name": "Get Income by Personal ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/income/personal/{{personal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "income", "personal", "{{personal_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Income Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/income",
+							"host": ["{{base_url}}"],
+							"path": ["api", "income"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Expenses Details",
+			"item": [
+				{
+					"name": "Create Expenses Details",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"cold_rent\": 800.00,\n  \"electricity\": 80.00,\n  \"living_expenses\": 400.00,\n  \"gas\": 60.00,\n  \"telecommunication\": 50.00,\n  \"account_maintenance_fee\": 15.00,\n  \"alimony\": 0.00,\n  \"subscriptions\": 30.00,\n  \"other_expenses\": 200.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "expenses"]
+						}
+					}
+				},
+				{
+					"name": "Get Expenses by Personal ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/expenses/personal/{{personal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "expenses", "personal", "{{personal_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Expenses Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "expenses"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Assets",
+			"item": [
+				{
+					"name": "Create Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"real_estate\": 250000.00,\n  \"securities\": 50000.00,\n  \"bank_deposits\": 25000.00,\n  \"building_savings\": 15000.00,\n  \"insurance_values\": 10000.00,\n  \"other_assets\": 5000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assets"]
+						}
+					}
+				},
+				{
+					"name": "Get Assets by Personal ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/assets/personal/{{personal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assets", "personal", "{{personal_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Assets",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assets"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Liabilities",
+			"item": [
+				{
+					"name": "Create Liability",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"loan_type\": \"HomeLoan\",\n  \"loan_bank\": \"Deutsche Bank\",\n  \"loan_amount\": 200000.00,\n  \"loan_monthly_rate\": 1200.00,\n  \"loan_interest\": 2.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/liabilities",
+							"host": ["{{base_url}}"],
+							"path": ["api", "liabilities"]
+						}
+					}
+				},
+				{
+					"name": "Get Liabilities by Personal ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/liabilities/personal/{{personal_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "liabilities", "personal", "{{personal_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Liabilities",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/liabilities",
+							"host": ["{{base_url}}"],
+							"path": ["api", "liabilities"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Person (Complete Profile)",
+			"item": [
+				{
+					"name": "Get Complete Person Profile",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/{{personal_id}}/complete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "{{personal_id}}", "complete"]
+						},
+						"description": "Get complete person profile with all financial data aggregated"
+					}
+				},
+				{
+					"name": "Get Person Summary",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/{{personal_id}}/summary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "{{personal_id}}", "summary"]
+						},
+						"description": "Get person summary with basic info and counts"
+					}
+				},
+				{
+					"name": "Get Financial Summary",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/{{personal_id}}/financial-summary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "{{personal_id}}", "financial-summary"]
+						},
+						"description": "Get calculated financial summary with totals and net worth"
+					}
+				},
+				{
+					"name": "Get Persons by Coach ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/coach/{{coach_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "coach", "{{coach_id}}"]
+						},
+						"description": "Get all complete person profiles managed by a coach"
+					}
+				}
+			]
+		},
+		{
+			"name": "Complete Workflow Test",
+			"item": [
+				{
+					"name": "1. Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 && pm.response.json().success) {",
+									"    const responseData = pm.response.json().data;",
+									"    pm.collectionVariables.set('auth_token', responseData.token);",
+									"    pm.collectionVariables.set('coach_id', responseData.user.id);",
+									"    console.log('✅ Login successful');",
+									"} else {",
+									"    console.log('❌ Login failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"coach@ywc.com\",\n  \"password\": \"coach123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "2. Create Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    const personalId = pm.response.json().data.personal_id;",
+									"    pm.collectionVariables.set('personal_id', personalId);",
+									"    console.log('✅ Personal details created:', personalId);",
+									"} else {",
+									"    console.log('❌ Personal details creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coach_id}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr.\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"street\": \"Test Street\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"12345\",\n  \"city\": \"Berlin\",\n  \"email\": \"test.user@example.com\",\n  \"phone\": \"+49123456789\",\n  \"whatsapp\": \"+49123456789\",\n  \"marital_status\": \"Single\",\n  \"birth_date\": \"1990-01-01\",\n  \"birth_place\": \"Berlin\",\n  \"nationality\": \"German\",\n  \"residence_permit\": \"EU Citizen\",\n  \"eu_citizen\": true,\n  \"tax_id\": \"12345678901\",\n  \"iban\": \"DE89370400440532013000\",\n  \"housing\": \"Rent\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/personal-details",
+							"host": ["{{base_url}}"],
+							"path": ["api", "personal-details"]
+						}
+					}
+				},
+				{
+					"name": "3. Create Employment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    console.log('✅ Employment details created');",
+									"} else {",
+									"    console.log('❌ Employment creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"employment_type\": \"PrimaryEmployment\",\n  \"occupation\": \"Software Engineer\",\n  \"contract_type\": \"Permanent\",\n  \"contract_duration\": \"Unlimited\",\n  \"employer_name\": \"Tech Company GmbH\",\n  \"employed_since\": \"2020-01-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employment"]
+						}
+					}
+				},
+				{
+					"name": "4. Create Income",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    console.log('✅ Income details created');",
+									"} else {",
+									"    console.log('❌ Income creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"gross_income\": 5000.00,\n  \"net_income\": 3500.00,\n  \"tax_class\": \"1\",\n  \"tax_id\": \"12345678901\",\n  \"number_of_salaries\": 12,\n  \"child_benefit\": 200.00,\n  \"other_income\": 500.00,\n  \"income_trade_business\": 0.00,\n  \"income_self_employed_work\": 1000.00,\n  \"income_side_job\": 300.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/income",
+							"host": ["{{base_url}}"],
+							"path": ["api", "income"]
+						}
+					}
+				},
+				{
+					"name": "5. Create Expenses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    console.log('✅ Expenses details created');",
+									"} else {",
+									"    console.log('❌ Expenses creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"cold_rent\": 800.00,\n  \"electricity\": 80.00,\n  \"living_expenses\": 400.00,\n  \"gas\": 60.00,\n  \"telecommunication\": 50.00,\n  \"account_maintenance_fee\": 15.00,\n  \"alimony\": 0.00,\n  \"subscriptions\": 30.00,\n  \"other_expenses\": 200.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "expenses"]
+						}
+					}
+				},
+				{
+					"name": "6. Create Assets",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    console.log('✅ Assets created');",
+									"} else {",
+									"    console.log('❌ Assets creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"real_estate\": 250000.00,\n  \"securities\": 50000.00,\n  \"bank_deposits\": 25000.00,\n  \"building_savings\": 15000.00,\n  \"insurance_values\": 10000.00,\n  \"other_assets\": 5000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assets"]
+						}
+					}
+				},
+				{
+					"name": "7. Create Liabilities",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().success) {",
+									"    console.log('✅ Liabilities created');",
+									"} else {",
+									"    console.log('❌ Liabilities creation failed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personal_id\": \"{{personal_id}}\",\n  \"loan_type\": \"HomeLoan\",\n  \"loan_bank\": \"Deutsche Bank\",\n  \"loan_amount\": 200000.00,\n  \"loan_monthly_rate\": 1200.00,\n  \"loan_interest\": 2.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/liabilities",
+							"host": ["{{base_url}}"],
+							"path": ["api", "liabilities"]
+						}
+					}
+				},
+				{
+					"name": "8. Get Complete Person Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 && pm.response.json().success) {",
+									"    const person = pm.response.json().data;",
+									"    console.log('✅ Complete person profile retrieved');",
+									"    console.log('📊 Employment records:', person.employmentDetails.length);",
+									"    console.log('💰 Income records:', person.incomeDetails.length);",
+									"    console.log('💸 Expense records:', person.expensesDetails.length);",
+									"    console.log('🏠 Asset records:', person.assets.length);",
+									"    console.log('💳 Liability records:', person.liabilities.length);",
+									"} else {",
+									"    console.log('❌ Failed to get complete profile');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/{{personal_id}}/complete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "{{personal_id}}", "complete"]
+						}
+					}
+				},
+				{
+					"name": "9. Get Financial Summary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 && pm.response.json().success) {",
+									"    const summary = pm.response.json().data;",
+									"    console.log('✅ Financial summary retrieved');",
+									"    console.log('💰 Total Net Income:', summary.total_net_income);",
+									"    console.log('💸 Total Expenses:', summary.total_expenses);",
+									"    console.log('🏠 Total Assets:', summary.total_assets);",
+									"    console.log('💳 Total Liabilities:', summary.total_loan_amount);",
+									"    console.log('📈 Net Worth:', summary.net_worth);",
+									"    console.log('💵 Monthly Cash Flow:', summary.net_monthly_cash_flow);",
+									"} else {",
+									"    console.log('❌ Failed to get financial summary');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/person/{{personal_id}}/financial-summary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "person", "{{personal_id}}", "financial-summary"]
+						}
+					}
+				}
+			]
+		}
+	]
+} 

@@ -1,0 +1,713 @@
+{
+	"info": {
+		"_postman_id": "personal-details-controller-ywc-api",
+		"name": "YWC API - Personal Details Controller",
+		"description": "Complete Personal Details Controller testing with all CRUD operations for the YWC Financial Forms API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Login for Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Login successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    ",
+									"    if (response.data && response.data.token) {",
+									"        pm.collectionVariables.set('authToken', response.data.token);",
+									"        pm.collectionVariables.set('coachId', response.data.user.id);",
+									"        console.log('Token saved:', response.data.token);",
+									"        console.log('Coach ID:', response.data.user.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"coach@ywc.com\",\n  \"password\": \"coach123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Personal Details CRUD",
+			"item": [
+				{
+					"name": "Create Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.have.property('personal_id');",
+									"    ",
+									"    if (response.data && response.data.personal_id) {",
+									"        pm.collectionVariables.set('personalId', response.data.personal_id);",
+									"        console.log('Personal ID saved:', response.data.personal_id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coachId}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr.\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"street\": \"Baker Street\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"12345\",\n  \"city\": \"Berlin\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+49123456789\",\n  \"whatsapp\": \"+49123456789\",\n  \"marital_status\": \"Single\",\n  \"birth_date\": \"1990-01-01\",\n  \"birth_place\": \"Berlin\",\n  \"nationality\": \"German\",\n  \"residence_permit\": \"EU Citizen\",\n  \"eu_citizen\": true,\n  \"tax_id\": \"12345678901\",\n  \"iban\": \"DE89370400440532013000\",\n  \"housing\": \"Rent\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Personal Details by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.have.property('personal_id');",
+									"    pm.expect(response.data).to.have.property('first_name');",
+									"    pm.expect(response.data).to.have.property('last_name');",
+									"    pm.expect(response.data).to.have.property('email');",
+									"    console.log('Personal details:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/{{personalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personalId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Personal Details by Coach ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details by coach retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.be.an('array');",
+									"    console.log('Clients for coach:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/coach/{{coachId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"coach",
+								"{{coachId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('All personal details retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.be.an('array');",
+									"    console.log('All personal details count:', response.data.length);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details updated successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.have.property('personal_id');",
+									"    console.log('Updated personal details:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John Updated\",\n  \"last_name\": \"Doe Updated\",\n  \"phone\": \"+49987654321\",\n  \"marital_status\": \"Married\",\n  \"housing\": \"Own\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/{{personalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personalId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Partial Update Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details partially updated successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    console.log('Partially updated personal details:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+49555666777\",\n  \"whatsapp\": \"+49555666777\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/{{personalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personalId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search and Filter",
+			"item": [
+				{
+					"name": "Search by Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Search by email successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    console.log('Search results:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/search?email=john.doe@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"search"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Marital Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Filter by marital status successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    console.log('Filter results:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details?marital_status=Married",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							],
+							"query": [
+								{
+									"key": "marital_status",
+									"value": "Married"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Applicant Type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Filter by applicant type successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    console.log('Applicant type filter results:', response.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details?applicant_type=PrimaryApplicant",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							],
+							"query": [
+								{
+									"key": "applicant_type",
+									"value": "PrimaryApplicant"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Create with Invalid Marital Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Invalid marital status rejected', function () {",
+									"    pm.response.to.have.status(400);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    console.log('Validation error:', response.error);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coachId}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr.\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"street\": \"Test Street\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"12345\",\n  \"city\": \"Berlin\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"+49123456789\",\n  \"marital_status\": \"InvalidStatus\",\n  \"birth_date\": \"1990-01-01\",\n  \"birth_place\": \"Berlin\",\n  \"nationality\": \"German\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create with Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Missing required fields rejected', function () {",
+									"    pm.response.to.have.status(400);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    console.log('Validation error:', response.error);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coachId}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"first_name\": \"Test\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create with Invalid Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Invalid email rejected', function () {",
+									"    pm.response.to.have.status(400);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    console.log('Validation error:', response.error);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coach_id\": \"{{coachId}}\",\n  \"applicant_type\": \"PrimaryApplicant\",\n  \"salutation\": \"Mr.\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"street\": \"Test Street\",\n  \"house_number\": \"123\",\n  \"postal_code\": \"12345\",\n  \"city\": \"Berlin\",\n  \"email\": \"invalid-email\",\n  \"phone\": \"+49123456789\",\n  \"marital_status\": \"Single\",\n  \"birth_date\": \"1990-01-01\",\n  \"birth_place\": \"Berlin\",\n  \"nationality\": \"German\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cleanup",
+			"item": [
+				{
+					"name": "Delete Personal Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Personal details deleted successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    console.log('Personal details deleted');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/personal-details/{{personalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"personal-details",
+								"{{personalId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-login if no token exists",
+					"if (!pm.collectionVariables.get('authToken')) {",
+					"    console.log('No auth token found, will need to login first');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coachId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "personalId",
+			"value": "",
+			"type": "string"
+		}
+	]
+} 

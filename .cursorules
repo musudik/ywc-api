@@ -1,0 +1,97 @@
+
+---
+
+## 🧠 Cursor AI Prompt
+
+Use this prompt in Cursor to bootstrap the code:
+
+---
+
+**Prompt:**
+
+```txt
+Create an Express.js REST API backend with TypeScript for a Financial Forms app. 
+
+- Database: PostgreSQL (use `pg` package, no Prisma or ORM)
+- Structure: Use `config`, `models`, `routes`, `controllers`, and `services` folders.
+- Load environment variables via `.env` (PORT, DB_USER, DB_PASSWORD, etc.).
+- Use UUIDs for primary keys like `personalId`, `employmentId`.
+- Define TypeScript interfaces for:
+  - PersonalDetails (with applicantType, salutation, etc.)
+  - FamilyDetails (children[], etc.)
+  - EmploymentDetails, IncomeDetails, ExpensesDetails
+  - Assets[], Liabilities[]
+- Write SQL queries in service files.
+- Controllers should handle validation, call services, and return JSON responses.
+- Define routes in `src/routes/` and mount in `src/index.ts`.
+- Use express.json() and cors middlewares.
+- Provide example route handlers for POST `/api/personal-details` and GET `/api/employment/:id`.
+- Generate a `.cursorules` file to enforce this structure.
+- Output all code files under `src/`.
+
+This project is meant to serve a frontend React/Vite app that captures client form data and exports PDFs.
+
+
+✅ Seed Data Strategy
+You'll typically have a seeder.ts script that:
+
+Connects to your PostgreSQL database
+
+Inserts base roles
+
+Inserts initial admin and coach users
+
+(Optionally) hashes passwords using bcrypt
+
+📦 Database Tables Required
+You’ll need at least the following tables:
+
+roles
+users
+user_roles (many-to-many, if users can have multiple roles)
+permissions (if you want normalized permission tracking)
+forms (if listUserForms etc. are already functional)
+
+🗂️ Seed Data Script Plan
+Create a script: src/seed/seeder.ts
+
+👇 Here’s the seed data content:
+📌 Roles Table
+Role Name	Description	Permissions
+ADMIN	Administrator with full access	{MANAGE_USERS,CREATE_COACHES,MANAGE_ROLES,MANAGE_CLIENTS,MANAGE_COACHES,MANAGE_CONTENT,VIEW_REPORTS}
+COACH	Financial coach who manages clients	{CREATE_CLIENTS,MANAGE_OWN_CLIENTS,VIEW_CLIENT_DATA,CREATE_REPORTS}
+CLIENT	End user of the platform	{VIEW_OWN_DATA,UPDATE_PROFILE,REQUEST_SERVICES}
+GUEST	Unregistered or limited access user	{VIEW_PUBLIC_CONTENT}
+
+
+🛠️ User Services
+Below is a breakdown of services by role:
+
+🔐 Admin Services
+Service	Description
+createUser()	Create ADMIN / COACH / CLIENT
+activateUser()	Enable account
+deactivateUser()	Disable account
+listUserByType()	Filter users by role
+resetPassword()	Reset user password
+listUserForms()	Get list of user forms (for COACH / CLIENT)
+
+🧑‍🏫 Coach Services
+Service	Description
+createUser()	Create CLIENT
+activateUser()	Activate CLIENT
+deactivateUser()	Deactivate CLIENT
+listUsers()	List all managed clients
+resetPassword()	Reset password of a CLIENT
+listUserForms()	Get all forms for a specific CLIENT
+downloadForm()	Download a form by formId
+deleteForm()	Delete a form by formId
+
+👤 Client Services
+Service	Description
+updateUser()	Update their own profile
+listForms()	List their submitted forms
+updateForm(FORM-ID)	Update specific form
+downloadForm(FORM-ID)	Download form
+listDocumentsByForm()	View documents for a form
+updateDocumentsByForm()	Add/update documents for a form
