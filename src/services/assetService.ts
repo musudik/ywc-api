@@ -38,12 +38,12 @@ export class AssetService {
   }
   
   // Get asset by ID
-  async getAssetById(assetId: string): Promise<Asset | null> {
-    const query = 'SELECT * FROM assets WHERE asset_id = $1';
+  async getAssetById(userId: string): Promise<Asset | null> {
+    const query = 'SELECT * FROM assets WHERE user_id = $1';
     
     try {
-      const result = await pool.query(query, [assetId]);
-      
+      const result = await pool.query(query, [userId]);
+      console.log("getAssetById", result.rows);
       if (result.rows.length === 0) {
         return null;
       }
