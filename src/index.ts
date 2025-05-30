@@ -12,6 +12,7 @@ import expensesRoutes from './routes/expensesRoutes';
 import assetRoutes from './routes/assetRoutes';
 import liabilityRoutes from './routes/liabilityRoutes';
 import familyMemberRoutes from './routes/familyMemberRoutes';
+import formConfigurationRoutes from './routes/formConfigurationRoutes';
 import personRoutes from './routes/personRoutes';
 
 // Load environment variables
@@ -44,6 +45,7 @@ app.get('/', (req, res) => {
       assets: '/api/assets',
       liabilities: '/api/liabilities',
       familyMembers: '/api/family-members',
+      formConfigurations: '/api/form-configurations',
       person: '/api/person',
       user: '/api/user',
       health: '/health'
@@ -71,6 +73,7 @@ app.use('/api/expenses', expensesRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/liabilities', liabilityRoutes);
 app.use('/api/family-members', familyMemberRoutes);
+app.use('/api/form-configurations', formConfigurationRoutes);
 app.use('/api/person', personRoutes);
 app.use('/api/user', personRoutes);
 

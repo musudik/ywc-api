@@ -147,6 +147,27 @@ CREATE TABLE IF NOT EXISTS liabilities (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Form Configurations Table (Configuration tool for dynamic forms)
+CREATE TABLE IF NOT EXISTS form_configurations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    config_id VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    name VARCHAR(255) NOT NULL,
+    form_type VARCHAR(100) NOT NULL,
+    version VARCHAR(50) NOT NULL DEFAULT '1.0',
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    sections JSONB NOT NULL DEFAULT '[]'::jsonb,
+    custom_fields JSONB NOT NULL DEFAULT '{}'::jsonb,
+    consent_form JSONB NOT NULL DEFAULT '{}'::jsonb,
+    documents JSONB NOT NULL DEFAULT '[]'::jsonb,
+    usage_count INTEGER NOT NULL DEFAULT 0,
+    last_used_at TIMESTAMP,
+    CONSTRAINT unique_name_form_type UNIQUE (name, form_type)
+);
+
 -- =====================================
 -- INDEXES FOR PERFORMANCE
 -- =====================================
@@ -173,6 +194,13 @@ CREATE INDEX IF NOT EXISTS idx_expenses_details_user_id ON expenses_details(user
 CREATE INDEX IF NOT EXISTS idx_assets_user_id ON assets(user_id);
 CREATE INDEX IF NOT EXISTS idx_liabilities_user_id ON liabilities(user_id);
 
+-- Form configurations indexes
+CREATE INDEX IF NOT EXISTS idx_form_configurations_config_id ON form_configurations(config_id);
+CREATE INDEX IF NOT EXISTS idx_form_configurations_created_by_id ON form_configurations(created_by_id);
+CREATE INDEX IF NOT EXISTS idx_form_configurations_form_type ON form_configurations(form_type);
+CREATE INDEX IF NOT EXISTS idx_form_configurations_is_active ON form_configurations(is_active);
+CREATE INDEX IF NOT EXISTS idx_form_configurations_name_form_type ON form_configurations(name, form_type);
+
 -- =====================================
 -- TRIGGERS FOR UPDATED_AT
 -- =====================================
@@ -195,6 +223,7 @@ CREATE TRIGGER update_income_details_updated_at BEFORE UPDATE ON income_details 
 CREATE TRIGGER update_expenses_details_updated_at BEFORE UPDATE ON expenses_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_assets_updated_at BEFORE UPDATE ON assets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_liabilities_updated_at BEFORE UPDATE ON liabilities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_form_configurations_updated_at BEFORE UPDATE ON form_configurations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================
 -- COMMENTS FOR DOCUMENTATION
@@ -216,6 +245,14 @@ COMMENT ON TABLE income_details IS 'User income information (German tax system)'
 COMMENT ON TABLE expenses_details IS 'User expense tracking (German living costs)';
 COMMENT ON TABLE assets IS 'User asset portfolio (German financial assets)';
 COMMENT ON TABLE liabilities IS 'User liabilities and debts (German loan types)';
+
+COMMENT ON TABLE form_configurations IS 'Dynamic form configurations for the configuration tool';
+COMMENT ON COLUMN form_configurations.config_id IS 'Unique identifier for the configuration';
+COMMENT ON COLUMN form_configurations.created_by_id IS 'References the user who created this configuration';
+COMMENT ON COLUMN form_configurations.sections IS 'JSON configuration for form sections and fields';
+COMMENT ON COLUMN form_configurations.custom_fields IS 'JSON configuration for custom form fields';
+COMMENT ON COLUMN form_configurations.consent_form IS 'JSON configuration for consent form settings';
+COMMENT ON COLUMN form_configurations.documents IS 'JSON configuration for required documents';
 
 -- =====================================
 -- SEED DATA

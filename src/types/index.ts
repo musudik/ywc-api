@@ -140,6 +140,97 @@ export interface FamilyMember {
 }
 
 // =====================
+// FORM CONFIGURATIONS SECTION
+// =====================
+
+export interface FormField {
+  id: string;
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'number' | 'date' | 'select' | 'checkbox' | 'radio' | 'textarea' | 'file';
+  required?: boolean;
+  placeholder?: string;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    message?: string;
+  };
+  options?: Array<{
+    value: string;
+    label: string;
+  }>;
+  defaultValue?: any;
+  conditional?: {
+    field: string;
+    value: any;
+    operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+  };
+}
+
+export interface FormSection {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  collapsible?: boolean;
+  fields: FormField[];
+}
+
+export interface ConsentForm {
+  enabled: boolean;
+  title?: string;
+  content?: string;
+  required?: boolean;
+  checkboxText?: string;
+}
+
+export interface FormDocument {
+  id: string;
+  name: string;
+  description?: string;
+  required: boolean;
+  acceptedTypes: string[];
+  maxSize?: number; // in MB
+}
+
+export interface FormConfiguration {
+  id: string;
+  config_id: string;
+  created_at: Date;
+  updated_at: Date;
+  created_by_id: string;
+  name: string;
+  form_type: string;
+  version: string;
+  description?: string;
+  is_active: boolean;
+  sections: FormSection[];
+  custom_fields: Record<string, any>;
+  consent_form: ConsentForm;
+  documents: FormDocument[];
+  usage_count: number;
+  last_used_at?: Date;
+}
+
+export interface CreateFormConfigurationRequest {
+  name: string;
+  form_type: string;
+  version?: string;
+  description?: string;
+  is_active?: boolean;
+  sections: FormSection[];
+  custom_fields?: Record<string, any>;
+  consent_form?: ConsentForm;
+  documents?: FormDocument[];
+}
+
+export interface UpdateFormConfigurationRequest extends Partial<CreateFormConfigurationRequest> {
+  config_id?: never; // Prevent updating config_id
+  created_by_id?: never; // Prevent updating created_by_id
+}
+
+// =====================
 // EMPLOYMENT DETAILS SECTION
 // =====================
 
