@@ -209,6 +209,7 @@ export interface FormConfiguration {
   custom_fields: Record<string, any>;
   consent_form: ConsentForm;
   documents: FormDocument[];
+  applicantconfig: string;
   usage_count: number;
   last_used_at?: Date;
 }
@@ -223,6 +224,7 @@ export interface CreateFormConfigurationRequest {
   custom_fields?: Record<string, any>;
   consent_form?: ConsentForm;
   documents?: FormDocument[];
+  applicantconfig?: string;
 }
 
 export interface UpdateFormConfigurationRequest extends Partial<CreateFormConfigurationRequest> {

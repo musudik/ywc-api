@@ -12,9 +12,9 @@ export class FormConfigurationService {
     const query = `
       INSERT INTO form_configurations (
         id, config_id, created_by_id, name, form_type, version,
-        description, is_active, sections, custom_fields, consent_form, documents
+        description, is_active, sections, custom_fields, consent_form, documents, applicantconfig
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `;
     
@@ -30,7 +30,8 @@ export class FormConfigurationService {
       JSON.stringify(data.sections || []),
       JSON.stringify(data.custom_fields || {}),
       JSON.stringify(data.consent_form || { enabled: false }),
-      JSON.stringify(data.documents || [])
+      JSON.stringify(data.documents || []),
+      data.applicantconfig || 'single'
     ];
     
     try {
@@ -309,7 +310,8 @@ export class FormConfigurationService {
         sections: original.sections,
         custom_fields: original.custom_fields,
         consent_form: original.consent_form,
-        documents: original.documents
+        documents: original.documents,
+        applicantconfig: original.applicantconfig
       };
 
       return await this.createFormConfiguration(cloneData, createdById);
@@ -335,6 +337,7 @@ export class FormConfigurationService {
       custom_fields: typeof row.custom_fields === 'object' ? row.custom_fields : JSON.parse(row.custom_fields || '{}'),
       consent_form: typeof row.consent_form === 'object' ? row.consent_form : JSON.parse(row.consent_form || '{"enabled": false}'),
       documents: Array.isArray(row.documents) ? row.documents : JSON.parse(row.documents || '[]'),
+      applicantconfig: row.applicantconfig || 'single',
       usage_count: row.usage_count,
       last_used_at: row.last_used_at
     };

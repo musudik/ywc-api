@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS form_configurations (
     custom_fields JSONB NOT NULL DEFAULT '{}'::jsonb,
     consent_form JSONB NOT NULL DEFAULT '{}'::jsonb,
     documents JSONB NOT NULL DEFAULT '[]'::jsonb,
+    applicantconfig VARCHAR(100) NOT NULL DEFAULT 'single' CHECK (applicantconfig IN ('single', 'joint', 'family', 'business', 'individual', 'multiple')),
     usage_count INTEGER NOT NULL DEFAULT 0,
     last_used_at TIMESTAMP,
     CONSTRAINT unique_name_form_type UNIQUE (name, form_type)
@@ -215,6 +216,7 @@ CREATE INDEX IF NOT EXISTS idx_form_configurations_created_by_id ON form_configu
 CREATE INDEX IF NOT EXISTS idx_form_configurations_form_type ON form_configurations(form_type);
 CREATE INDEX IF NOT EXISTS idx_form_configurations_is_active ON form_configurations(is_active);
 CREATE INDEX IF NOT EXISTS idx_form_configurations_name_form_type ON form_configurations(name, form_type);
+CREATE INDEX IF NOT EXISTS idx_form_configurations_applicantconfig ON form_configurations(applicantconfig);
 
 -- Form submissions indexes
 CREATE INDEX IF NOT EXISTS idx_form_submissions_form_config_id ON form_submissions(form_config_id);
@@ -276,6 +278,7 @@ COMMENT ON COLUMN form_configurations.sections IS 'JSON configuration for form s
 COMMENT ON COLUMN form_configurations.custom_fields IS 'JSON configuration for custom form fields';
 COMMENT ON COLUMN form_configurations.consent_form IS 'JSON configuration for consent form settings';
 COMMENT ON COLUMN form_configurations.documents IS 'JSON configuration for required documents';
+COMMENT ON COLUMN form_configurations.applicantconfig IS 'Applicant configuration type: single, joint, family, business, individual, or multiple';
 
 COMMENT ON TABLE form_submissions IS 'User form submissions based on form configurations';
 COMMENT ON COLUMN form_submissions.form_config_id IS 'References the form configuration used for this submission';
