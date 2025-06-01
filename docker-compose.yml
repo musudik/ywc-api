@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # YWC API Application
+  ywc-api:
+    build: .
+    container_name: ywc-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ywc
+      DB_USER: ywc
+      DB_PASSWORD: yourwealthcoach
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      CORS_ORIGIN: "*"
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ywc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ywc-postgres
+    environment:
+      POSTGRES_DB: ywc
+      POSTGRES_USER: ywc
+      POSTGRES_PASSWORD: yourwealthcoach
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deploy/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - ywc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ywc -d ywc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database Migration Service (runs once)
+  db-migration:
+    build: .
+    container_name: ywc-db-migration
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ywc
+      DB_USER: ywc
+      DB_PASSWORD: yourwealthcoach
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:ro
+      - ./deploy:/app/deploy:ro
+    networks:
+      - ywc-network
+    command: ["node", "deploy/db-setup.js"]
+    restart: "no"
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ywc-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ywc.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ywc-network
+    restart: unless-stopped
+    profiles:
+      - admin
+
+# Named volumes
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# Networks
+networks:
+  ywc-network:
+    driver: bridge 
