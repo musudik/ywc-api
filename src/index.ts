@@ -100,12 +100,12 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 YWC Financial Forms API is running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️  Database: PostgreSQL`);
   console.log(`🔐 Authentication: JWT enabled`);
-  console.log(`📋 API Documentation: http://localhost:${PORT}/`);
+  console.log(`📋 API Documentation: http://0.0.0.0:${PORT}/`);
 });
 
 export default app; 
