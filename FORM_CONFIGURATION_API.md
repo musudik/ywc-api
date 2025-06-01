@@ -371,6 +371,34 @@ const response = await fetch('/api/form-configurations', {
 });
 ```
 
+#### Updating a Configuration
+```javascript
+const updateData = {
+  name: "Updated Client Assessment Form",
+  description: "Updated description",
+  sections: [
+    // Updated sections array
+  ],
+  consent_form: {  // Note: Use "consent_form" (singular), not "consent_forms"
+    enabled: true,
+    title: "Updated Privacy Consent",
+    content: "I agree to updated data processing...",
+    required: true
+  }
+};
+
+const response = await fetch(`/api/form-configurations/${configId}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(updateData)
+});
+```
+
+**Important Note:** The field name for consent configuration is `consent_form` (singular), not `consent_forms` (plural). The API will handle both for backward compatibility, but `consent_form` is the correct field name.
+
 ## Error Handling
 
 The API returns consistent error responses:

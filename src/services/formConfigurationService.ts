@@ -156,11 +156,17 @@ export class FormConfigurationService {
     // Build dynamic update query
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined) {
-        if (['sections', 'custom_fields', 'consent_form', 'documents'].includes(key)) {
-          updateFields.push(`${key} = $${paramCount}`);
+        // Handle consent_forms vs consent_form naming inconsistency
+        let actualKey = key;
+        if (key === 'consent_forms') {
+          actualKey = 'consent_form';
+        }
+        
+        if (['sections', 'custom_fields', 'consent_form', 'documents'].includes(actualKey)) {
+          updateFields.push(`${actualKey} = $${paramCount}`);
           values.push(JSON.stringify(value));
         } else {
-          updateFields.push(`${key} = $${paramCount}`);
+          updateFields.push(`${actualKey} = $${paramCount}`);
           values.push(value);
         }
         paramCount++;

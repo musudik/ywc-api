@@ -364,4 +364,47 @@ export interface RegisterRequest {
   last_name: string;
   role?: UserRole;
   coach_id?: string;
+}
+
+// =====================
+// FORM SUBMISSIONS SECTION
+// =====================
+
+export type FormSubmissionStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
+
+export interface FormSubmissionData {
+  id: string;
+  form_config_id: string;
+  user_id: string;
+  form_data: Record<string, any>;
+  status: FormSubmissionStatus;
+  submitted_at?: Date;
+  reviewed_at?: Date;
+  reviewed_by?: string;
+  review_notes?: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface FormSubmissionList {
+  id: string;
+  form_config_id: string;
+  config_name: string;
+  user_id: string;
+  status: string;
+  submitted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateFormSubmissionRequest {
+  form_config_id: string; // UUID or config_id from form_configurations table
+  form_data: Record<string, any>;
+  status?: FormSubmissionStatus;
+}
+
+export interface UpdateFormSubmissionRequest {
+  form_data?: Record<string, any>;
+  status?: FormSubmissionStatus;
+  review_notes?: string;
 } 

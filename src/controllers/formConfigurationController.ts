@@ -212,6 +212,17 @@ export class FormConfigurationController {
       const { id } = req.params;
       const data: UpdateFormConfigurationRequest = req.body;
       
+      // Log the incoming data for debugging (remove in production)
+      console.log('Update request received for form configuration:', id);
+      console.log('Request body keys:', Object.keys(data));
+      
+      // Handle common field name variations
+      if ('consent_forms' in data && !('consent_form' in data)) {
+        console.log('Converting consent_forms to consent_form');
+        (data as any).consent_form = (data as any).consent_forms;
+        delete (data as any).consent_forms;
+      }
+      
       // Validate sections structure if provided
       if (data.sections) {
         if (!Array.isArray(data.sections) || data.sections.length === 0) {

@@ -168,6 +168,21 @@ CREATE TABLE IF NOT EXISTS form_configurations (
     CONSTRAINT unique_name_form_type UNIQUE (name, form_type)
 );
 
+-- Form Submissions Table (User form submissions)
+CREATE TABLE IF NOT EXISTS form_submissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    form_config_id UUID NOT NULL REFERENCES form_configurations(id) ON DELETE RESTRICT,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'approved', 'rejected', 'under_review')),
+    submitted_at TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    review_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =====================================
 -- INDEXES FOR PERFORMANCE
 -- =====================================
@@ -201,6 +216,13 @@ CREATE INDEX IF NOT EXISTS idx_form_configurations_form_type ON form_configurati
 CREATE INDEX IF NOT EXISTS idx_form_configurations_is_active ON form_configurations(is_active);
 CREATE INDEX IF NOT EXISTS idx_form_configurations_name_form_type ON form_configurations(name, form_type);
 
+-- Form submissions indexes
+CREATE INDEX IF NOT EXISTS idx_form_submissions_form_config_id ON form_submissions(form_config_id);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_user_id ON form_submissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_status ON form_submissions(status);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_submitted_at ON form_submissions(submitted_at);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_reviewed_by ON form_submissions(reviewed_by);
+
 -- =====================================
 -- TRIGGERS FOR UPDATED_AT
 -- =====================================
@@ -224,6 +246,7 @@ CREATE TRIGGER update_expenses_details_updated_at BEFORE UPDATE ON expenses_deta
 CREATE TRIGGER update_assets_updated_at BEFORE UPDATE ON assets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_liabilities_updated_at BEFORE UPDATE ON liabilities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_form_configurations_updated_at BEFORE UPDATE ON form_configurations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_form_submissions_updated_at BEFORE UPDATE ON form_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================
 -- COMMENTS FOR DOCUMENTATION
@@ -253,6 +276,13 @@ COMMENT ON COLUMN form_configurations.sections IS 'JSON configuration for form s
 COMMENT ON COLUMN form_configurations.custom_fields IS 'JSON configuration for custom form fields';
 COMMENT ON COLUMN form_configurations.consent_form IS 'JSON configuration for consent form settings';
 COMMENT ON COLUMN form_configurations.documents IS 'JSON configuration for required documents';
+
+COMMENT ON TABLE form_submissions IS 'User form submissions based on form configurations';
+COMMENT ON COLUMN form_submissions.form_config_id IS 'References the form configuration used for this submission';
+COMMENT ON COLUMN form_submissions.user_id IS 'References the user who submitted this form';
+COMMENT ON COLUMN form_submissions.form_data IS 'JSON data containing the submitted form values';
+COMMENT ON COLUMN form_submissions.status IS 'Current status of the form submission';
+COMMENT ON COLUMN form_submissions.reviewed_by IS 'References the user who reviewed this submission';
 
 -- =====================================
 -- SEED DATA
