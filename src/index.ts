@@ -20,7 +20,7 @@ import personRoutes from './routes/personRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT!;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
 app.use(cors());
@@ -108,4 +108,4 @@ app.listen(parseInt(PORT, 10), '0.0.0.0', () => {
   console.log(`📋 API Documentation: http://0.0.0.0:${PORT}/`);
 });
 
-export default app; 
+export default app;
