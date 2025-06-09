@@ -5,12 +5,11 @@ require("dotenv").config();
 
 // Database configuration
 const dbConfig = {
-  host:
-    process.env.DB_HOST || "ep-mute-shadow-a6lr5frg.us-west-2.aws.neon.tech",
-  port: parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME || "neondb",
-  user: process.env.DB_USER || "neondb_owner",
-  password: process.env.DB_PASSWORD || "npg_zhqi9tWxpK6n",
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT),
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 20000,

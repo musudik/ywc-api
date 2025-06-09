@@ -3,18 +3,26 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// PostgreSQL connection configuration
+// Validate required environment variables
+const requiredEnvVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+  console.error('💡 Please set these environment variables before starting the application');
+  process.exit(1);
+}
+
+// PostgreSQL connection configuration (optimized for Neon)
 const dbConfig: PoolConfig = {
-  //postgresql://neondb_owner:npg_zhqi9tWxpK6n@ep-mute-shadow-a6lr5frg.us-west-2.aws.neon.tech/neondb?sslmode=require
-  host:
-    process.env.DB_HOST || "ep-mute-shadow-a6lr5frg.us-west-2.aws.neon.tech",
+  host: process.env.DB_HOST!,
   port: parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME || "neondb",
-  user: process.env.DB_USER || "neondb_owner",
-  password: process.env.DB_PASSWORD || "npg_zhqi9tWxpK6n",
-  max: 20, // maximum number of clients in the pool
+  database: process.env.DB_NAME!,
+  user: process.env.DB_USER!,
+  password: process.env.DB_PASSWORD!,
+  max: 10, // maximum number of clients in the pool (reduced for Neon)
   idleTimeoutMillis: 30000, // close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // return an error after 2 seconds if connection could not be established
+  connectionTimeoutMillis: 15000, // increased timeout for Neon cold starts (15 seconds)
   ssl: {
     rejectUnauthorized: false,
   },
