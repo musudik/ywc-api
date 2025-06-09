@@ -80,6 +80,7 @@ export class FormConfigurationController {
   // Get form configuration by ID
   async getFormConfigurationById(req: Request, res: Response): Promise<void> {
     try {
+      console.log('getFormConfigurationById');
       const { id } = req.params;
       
       const formConfiguration = await formConfigurationService.getFormConfigurationById(id);
@@ -110,9 +111,18 @@ export class FormConfigurationController {
   // Get form configuration by config ID
   async getFormConfigurationByConfigId(req: Request, res: Response): Promise<void> {
     try {
+      console.log('getFormConfigurationByConfigId');
       const { configId } = req.params;
       
-      const formConfiguration = await formConfigurationService.getFormConfigurationByConfigId(configId);
+      // First try to get by config_id (form_config_id column)
+      let formConfiguration = await formConfigurationService.getFormConfigurationByConfigId(configId);
+      
+      // If not found by config_id, try to get by primary key id
+      // This handles cases where frontend sends either form_config_id or table id
+      if (!formConfiguration) {
+        console.log(`Form configuration not found by config_id: ${configId}, trying by primary key id`);
+        formConfiguration = await formConfigurationService.getFormConfigurationById(configId);
+      }
       
       if (!formConfiguration) {
         res.status(404).json({
@@ -123,7 +133,9 @@ export class FormConfigurationController {
       }
 
       // Increment usage count when configuration is accessed
-      await formConfigurationService.incrementUsageCount(configId);
+      // Use the config_id for incrementing usage count
+      const configIdForUsage = formConfiguration.config_id || configId;
+      await formConfigurationService.incrementUsageCount(configIdForUsage);
 
       res.status(200).json({
         success: true,

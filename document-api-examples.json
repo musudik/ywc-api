@@ -1,0 +1,165 @@
+{
+  "document_tracking_api_examples": {
+    "description": "Document tracking API for form submissions with S3 bucket integration",
+    "base_url": "http://localhost:3000/api",
+    
+    "authentication": {
+      "method": "Bearer Token",
+      "header": "Authorization: Bearer <token>",
+      "login_endpoint": "POST /auth/login",
+      "example_credentials": {
+        "email": "coach@ywc.com",
+        "password": "coach123"
+      }
+    },
+
+    "endpoints": {
+      "get_document_status": {
+        "method": "GET",
+        "url": "/form-submissions/{form_submission_id}/document-status",
+        "description": "Get status of all documents uploaded for a form submission",
+        "example_url": "/form-submissions/bab937ed-959d-4992-8555-a6ad58347b1b/document-status",
+        "response_example": {
+          "form_submission_id": "bab937ed-959d-4992-8555-a6ad58347b1b",
+          "documents": [
+            {
+              "id": "doc-uuid-here",
+              "form_submission_id": "bab937ed-959d-4992-8555-a6ad58347b1b",
+              "client_id": "e3337879-bb7a-47b8-b14c-3897b1fe6190",
+              "form_config_id": "sample_financial_form_1748618592.017441",
+              "file_name": "Newmika-Eyetest-Claim-Jun2025.pdf",
+              "applicant_type": "single",
+              "document_id": "income_proof",
+              "firebase_path": "coaches/6b2c586f-7de7-4d54-b927-c9b3e7cdec00/clients/e3337879-bb7a-47b8-b14c-3897b1fe6190/applicants/single/documents/income_proof-proof_of_income",
+              "upload_status": "uploaded",
+              "uploaded_at": "2025-06-09T08:07:27.173Z",
+              "created_at": "2025-01-15T10:30:00.000Z",
+              "updated_at": "2025-01-15T10:35:00.000Z"
+            }
+          ],
+          "total_documents": 1,
+          "uploaded_count": 1,
+          "pending_count": 0,
+          "failed_count": 0
+        }
+      },
+
+      "create_document": {
+        "method": "POST",
+        "url": "/form-submissions/{form_submission_id}/documents",
+        "description": "Create a new document record when file is uploaded to S3",
+        "request_body": {
+          "client_id": "e3337879-bb7a-47b8-b14c-3897b1fe6190",
+          "form_config_id": "sample_financial_form_1748618592.017441",
+          "file_name": "Newmika-Eyetest-Claim-Jun2025.pdf",
+          "applicant_type": "single",
+          "document_id": "income_proof",
+          "firebase_path": "coaches/6b2c586f-7de7-4d54-b927-c9b3e7cdec00/clients/e3337879-bb7a-47b8-b14c-3897b1fe6190/applicants/single/documents/income_proof-proof_of_income",
+          "upload_status": "uploaded",
+          "uploaded_at": "2025-06-09T08:07:27.173Z"
+        },
+        "response_example": {
+          "message": "Form document created successfully",
+          "document": {
+            "id": "new-doc-uuid",
+            "form_submission_id": "bab937ed-959d-4992-8555-a6ad58347b1b",
+            "client_id": "e3337879-bb7a-47b8-b14c-3897b1fe6190",
+            "form_config_id": "sample_financial_form_1748618592.017441",
+            "file_name": "Newmika-Eyetest-Claim-Jun2025.pdf",
+            "applicant_type": "single",
+            "document_id": "income_proof",
+            "firebase_path": "coaches/6b2c586f-7de7-4d54-b927-c9b3e7cdec00/clients/e3337879-bb7a-47b8-b14c-3897b1fe6190/applicants/single/documents/income_proof-proof_of_income",
+            "upload_status": "uploaded",
+            "uploaded_at": "2025-06-09T08:07:27.173Z",
+            "created_at": "2025-01-15T10:30:00.000Z",
+            "updated_at": "2025-01-15T10:30:00.000Z"
+          }
+        }
+      },
+
+      "update_document_status": {
+        "method": "PATCH",
+        "url": "/form-submissions/{form_submission_id}/documents/{document_id}/status",
+        "description": "Update document upload status",
+        "request_body": {
+          "upload_status": "uploaded",
+          "uploaded_at": "2025-06-09T08:07:27.173Z"
+        },
+        "status_options": ["pending", "uploading", "uploaded", "failed", "deleted"]
+      },
+
+      "get_all_documents": {
+        "method": "GET",
+        "url": "/form-submissions/{form_submission_id}/documents",
+        "description": "Get all documents for a form submission"
+      },
+
+      "get_single_document": {
+        "method": "GET",
+        "url": "/form-submissions/{form_submission_id}/documents/{document_id}",
+        "description": "Get a specific document by ID"
+      },
+
+      "update_document": {
+        "method": "PUT",
+        "url": "/form-submissions/{form_submission_id}/documents/{document_id}",
+        "description": "Update document details",
+        "request_body": {
+          "file_name": "Updated-filename.pdf",
+          "firebase_path": "new/path/to/document",
+          "upload_status": "uploaded"
+        }
+      },
+
+      "delete_document": {
+        "method": "DELETE",
+        "url": "/form-submissions/{form_submission_id}/documents/{document_id}",
+        "description": "Delete a document record (admin/coach only)"
+      }
+    },
+
+    "database_schema": {
+      "table_name": "form_documents",
+      "foreign_key": "form_submission_id references form_submissions(id)",
+      "fields": {
+        "id": "UUID PRIMARY KEY",
+        "form_submission_id": "UUID NOT NULL (FK)",
+        "client_id": "UUID NOT NULL",
+        "form_config_id": "VARCHAR(255) NOT NULL",
+        "file_name": "VARCHAR(500) NOT NULL",
+        "applicant_type": "VARCHAR(50) NOT NULL",
+        "document_id": "VARCHAR(255) NOT NULL",
+        "firebase_path": "TEXT NOT NULL",
+        "upload_status": "VARCHAR(50) DEFAULT 'pending'",
+        "uploaded_at": "TIMESTAMP WITH TIME ZONE",
+        "created_at": "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP",
+        "updated_at": "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
+      },
+      "indexes": [
+        "idx_form_documents_client_id",
+        "idx_form_documents_upload_status",
+        "idx_form_documents_uploaded_at"
+      ],
+      "constraints": [
+        "UNIQUE(form_submission_id, document_id, applicant_type)"
+      ]
+    },
+
+    "integration_workflow": {
+      "step_1": "User uploads file to S3 bucket via frontend",
+      "step_2": "Frontend calls POST /form-submissions/{id}/documents with file metadata",
+      "step_3": "API creates document record in form_documents table",
+      "step_4": "S3 upload completes, frontend calls PATCH to update status to 'uploaded'",
+      "step_5": "Use GET /form-submissions/{id}/document-status to check upload progress",
+      "step_6": "Form submission can be marked complete when all required documents are uploaded"
+    },
+
+    "example_curl_commands": {
+      "login": "curl -X POST http://localhost:3000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"coach@ywc.com\",\"password\":\"coach123\"}'",
+      
+      "create_document": "curl -X POST http://localhost:3000/api/form-submissions/bab937ed-959d-4992-8555-a6ad58347b1b/documents -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{\"client_id\":\"e3337879-bb7a-47b8-b14c-3897b1fe6190\",\"form_config_id\":\"sample_financial_form_1748618592.017441\",\"file_name\":\"Newmika-Eyetest-Claim-Jun2025.pdf\",\"applicant_type\":\"single\",\"document_id\":\"income_proof\",\"firebase_path\":\"coaches/6b2c586f-7de7-4d54-b927-c9b3e7cdec00/clients/e3337879-bb7a-47b8-b14c-3897b1fe6190/applicants/single/documents/income_proof-proof_of_income\",\"upload_status\":\"uploaded\",\"uploaded_at\":\"2025-06-09T08:07:27.173Z\"}'",
+      
+      "get_document_status": "curl -X GET http://localhost:3000/api/form-submissions/bab937ed-959d-4992-8555-a6ad58347b1b/document-status -H 'Authorization: Bearer <token>'"
+    }
+  }
+} 

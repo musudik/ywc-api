@@ -184,6 +184,25 @@ CREATE TABLE IF NOT EXISTS form_submissions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Form Documents Table (Document tracking for S3 uploads)
+CREATE TABLE IF NOT EXISTS form_documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    form_submission_id UUID NOT NULL REFERENCES form_submissions(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL,
+    form_config_id VARCHAR(255) NOT NULL,
+    file_name VARCHAR(500) NOT NULL,
+    applicant_type VARCHAR(50) NOT NULL,
+    document_id VARCHAR(255) NOT NULL,
+    firebase_path TEXT NOT NULL,
+    upload_status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (upload_status IN ('pending', 'uploading', 'uploaded', 'failed', 'deleted')),
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Unique constraint to prevent duplicate documents for same form submission
+    CONSTRAINT unique_form_document UNIQUE (form_submission_id, document_id, applicant_type)
+);
+
 -- =====================================
 -- INDEXES FOR PERFORMANCE
 -- =====================================
@@ -225,6 +244,14 @@ CREATE INDEX IF NOT EXISTS idx_form_submissions_status ON form_submissions(statu
 CREATE INDEX IF NOT EXISTS idx_form_submissions_submitted_at ON form_submissions(submitted_at);
 CREATE INDEX IF NOT EXISTS idx_form_submissions_reviewed_by ON form_submissions(reviewed_by);
 
+-- Form documents indexes
+CREATE INDEX IF NOT EXISTS idx_form_documents_form_submission_id ON form_documents(form_submission_id);
+CREATE INDEX IF NOT EXISTS idx_form_documents_client_id ON form_documents(client_id);
+CREATE INDEX IF NOT EXISTS idx_form_documents_upload_status ON form_documents(upload_status);
+CREATE INDEX IF NOT EXISTS idx_form_documents_uploaded_at ON form_documents(uploaded_at);
+CREATE INDEX IF NOT EXISTS idx_form_documents_document_id ON form_documents(document_id);
+CREATE INDEX IF NOT EXISTS idx_form_documents_applicant_type ON form_documents(applicant_type);
+
 -- =====================================
 -- TRIGGERS FOR UPDATED_AT
 -- =====================================
@@ -249,6 +276,7 @@ CREATE TRIGGER update_assets_updated_at BEFORE UPDATE ON assets FOR EACH ROW EXE
 CREATE TRIGGER update_liabilities_updated_at BEFORE UPDATE ON liabilities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_form_configurations_updated_at BEFORE UPDATE ON form_configurations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_form_submissions_updated_at BEFORE UPDATE ON form_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_form_documents_updated_at BEFORE UPDATE ON form_documents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================
 -- COMMENTS FOR DOCUMENTATION
@@ -287,13 +315,43 @@ COMMENT ON COLUMN form_submissions.form_data IS 'JSON data containing the submit
 COMMENT ON COLUMN form_submissions.status IS 'Current status of the form submission';
 COMMENT ON COLUMN form_submissions.reviewed_by IS 'References the user who reviewed this submission';
 
+COMMENT ON TABLE form_documents IS 'Document tracking for S3 uploaded files related to form submissions';
+COMMENT ON COLUMN form_documents.form_submission_id IS 'References the form submission this document belongs to';
+COMMENT ON COLUMN form_documents.client_id IS 'Client UUID for document organization';
+COMMENT ON COLUMN form_documents.form_config_id IS 'Form configuration identifier for document categorization';
+COMMENT ON COLUMN form_documents.file_name IS 'Original filename of the uploaded document';
+COMMENT ON COLUMN form_documents.applicant_type IS 'Type of applicant: single, joint, family, etc.';
+COMMENT ON COLUMN form_documents.document_id IS 'Document type identifier (e.g., income_proof, bank_statement)';
+COMMENT ON COLUMN form_documents.firebase_path IS 'Full path to the document in Firebase/S3 storage';
+COMMENT ON COLUMN form_documents.upload_status IS 'Current upload status: pending, uploading, uploaded, failed, deleted';
+COMMENT ON COLUMN form_documents.uploaded_at IS 'Timestamp when the document was successfully uploaded';
+
 -- =====================================
 -- SEED DATA
 -- =====================================
 
--- Insert default roles into users table (these act as role templates)
+-- Insert default users with proper password hashes
+-- admin@ywc.com / admin123 -> $2b$10$example_admin_hash
+-- coach@ywc.com / coach123 -> $2b$10$example_coach_hash
+-- client@ywc.com / client123 -> $2b$10$example_client_hash
 INSERT INTO users (id, email, password, first_name, last_name, role, is_active) 
 VALUES 
-    (uuid_generate_v4(), 'admin@ywc.com', '$2b$10$example_hash', 'System', 'Admin', 'ADMIN', true),
-    (uuid_generate_v4(), 'coach@ywc.com', '$2b$10$example_hash', 'Default', 'Coach', 'COACH', true)
-ON CONFLICT (email) DO NOTHING; 
+    ('11111111-1111-1111-1111-111111111111', 'admin@ywc.com', '$2b$10$rjlv8Y3LPJ5UfZqZWVKm8e.EqL3/YXhBlcXV0ZJ1dGvKnTFsUUf8G', 'System', 'Admin', 'ADMIN', true),
+    ('22222222-2222-2222-2222-222222222222', 'coach@ywc.com', '$2b$10$rjlv8Y3LPJ5UfZqZWVKm8e.EqL3/YXhBlcXV0ZJ1dGvKnTFsUUf8G', 'Default', 'Coach', 'COACH', true),
+    ('33333333-3333-3333-3333-333333333333', 'client@ywc.com', '$2b$10$rjlv8Y3LPJ5UfZqZWVKm8e.EqL3/YXhBlcXV0ZJ1dGvKnTFsUUf8G', 'Test', 'Client', 'CLIENT', true)
+ON CONFLICT (email) DO NOTHING;
+
+-- Set coach-client relationship
+UPDATE users SET coach_id = '22222222-2222-2222-2222-222222222222' WHERE email = 'client@ywc.com';
+
+-- Insert sample form configuration for testing
+INSERT INTO form_configurations (id, config_id, created_by_id, name, form_type, description, applicantconfig)
+VALUES (
+    '44444444-4444-4444-4444-444444444444',
+    'sample_financial_form_1748618592.017441',
+    '22222222-2222-2222-2222-222222222222',
+    'Sample Financial Form',
+    'financial_assessment',
+    'Default financial assessment form for testing document uploads',
+    'single'
+) ON CONFLICT (config_id) DO NOTHING; 

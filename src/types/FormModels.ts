@@ -12,6 +12,56 @@ export type LoanType =
   | 'EducationLoan'
   | 'OtherLoan';
 export type Relation = 'Spouse' | 'Child' | 'Parent' | 'Other';
+
+// =====================
+// Form Document Types
+// =====================
+
+export type DocumentUploadStatus = 'pending' | 'uploading' | 'uploaded' | 'failed' | 'deleted';
+
+export interface FormDocument {
+  id: string;
+  form_submission_id: string;
+  client_id: string;
+  form_config_id: string;
+  file_name: string;
+  applicant_type: string;
+  document_id: string;
+  firebase_path: string;
+  upload_status: DocumentUploadStatus;
+  uploaded_at: string; // ISO string
+  created_at: string; // ISO string
+  updated_at: string; // ISO string
+}
+
+export interface CreateFormDocumentData {
+  form_submission_id: string;
+  client_id: string;
+  form_config_id: string;
+  file_name: string;
+  applicant_type: string;
+  document_id: string;
+  firebase_path: string;
+  upload_status?: DocumentUploadStatus;
+  uploaded_at?: string; // ISO string
+}
+
+export interface UpdateFormDocumentData {
+  file_name?: string;
+  upload_status?: DocumentUploadStatus;
+  firebase_path?: string;
+  uploaded_at?: string; // ISO string
+}
+
+export interface DocumentStatusResponse {
+  form_submission_id: string;
+  documents: FormDocument[];
+  total_documents: number;
+  uploaded_count: number;
+  pending_count: number;
+  failed_count: number;
+}
+
 // =====================
 // Personal Details
 // =====================

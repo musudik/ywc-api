@@ -58,7 +58,7 @@ export class FormSubmissionController {
   async updateFormSubmission(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const data: UpdateFormSubmissionRequest = req.body;
+      const rawData = req.body;
       const userId = (req as any).user?.userId;
       const userRole = (req as any).user?.role;
       
@@ -70,13 +70,21 @@ export class FormSubmissionController {
         return;
       }
 
+      // Filter out form_config_id from update data as it's not allowed to be updated
+      const { form_config_id, ...data } = rawData;
+      
+      // Warn if form_config_id was provided (for debugging)
+      if (form_config_id) {
+        console.log(`Warning: form_config_id (${form_config_id}) was provided in update request but will be ignored. Form configuration cannot be changed after creation.`);
+      }
+
       // For regular users, only allow updating their own submissions
       // For admin/coach, allow updating any submission
       const restrictToUser = !['ADMIN', 'COACH'].includes(userRole);
       
       const updatedFormSubmission = await formSubmissionService.updateFormSubmission(
         id, 
-        data, 
+        data as UpdateFormSubmissionRequest, 
         restrictToUser ? userId : undefined
       );
       
