@@ -110,7 +110,8 @@ app.use(
 );
 
 // Start server
-app.listen(parseInt(PORT, 10), "0.0.0.0", () => {
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 YWC Financial Forms API is running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🗄️  Database: PostgreSQL`);
