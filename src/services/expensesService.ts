@@ -86,8 +86,8 @@ export class ExpensesService {
   
   // Update expenses details by expenses ID
   async updateExpensesDetails(
-    expensesId: string, 
-    data: Partial<Omit<ExpensesDetails, 'expenses_id' | 'created_at' | 'updated_at'>>
+    user_id: string, 
+    data: Partial<Omit<ExpensesDetails, 'user_id' | 'created_at' | 'updated_at'>>
   ): Promise<ExpensesDetails | null> {
     const updateFields: string[] = [];
     const values: any[] = [];
@@ -109,12 +109,12 @@ export class ExpensesService {
     const query = `
       UPDATE expenses_details 
       SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE expenses_id = $${paramCount}
+      WHERE user_id = $${paramCount}
       RETURNING *
     `;
     
-    values.push(expensesId);
-    
+    values.push(user_id);
+
     try {
       const result = await pool.query(query, values);
       

@@ -111,10 +111,10 @@ export class ExpensesController {
   // Update expenses details
   async updateExpensesDetails(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const { userId } = req.params;
       const data = req.body;
       
-      const updatedExpensesDetails = await expensesService.updateExpensesDetails(id, data);
+      const updatedExpensesDetails = await expensesService.updateExpensesDetailsByUserId(userId, data);
       
       if (!updatedExpensesDetails) {
         res.status(404).json({
