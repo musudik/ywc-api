@@ -19,11 +19,33 @@ import personRoutes from "./routes/personRoutes";
 // Load environment variables
 dotenv.config();
 
+const allowedOrigins = [
+  'https://your-wealth-coach.replit.app', // Production frontend
+  'http://localhost:3000',                // Local frontend dev
+  'http://127.0.0.1:3000', 
+  'http://localhost:5173',                // Local frontend dev
+  'http://127.0.0.1:5173', 
+  //                // Alternative localhost
+  // Add more URLs as needed
+];
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like curl, mobile apps)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy: No access for origin ${origin}`));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
