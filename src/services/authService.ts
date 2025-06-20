@@ -161,7 +161,7 @@ export class AuthService {
 
   // Get user by ID
   async getUserById(userId: string): Promise<Omit<User, 'password'> | null> {
-    const query = 'SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at FROM users WHERE id = $1 AND is_active = true';
+    const query = 'SELECT id, email, first_name, last_name, role, coach_id, is_active, created_at, updated_at FROM users WHERE id = $1 AND is_active = true';
     const result = await pool.query(query, [userId]);
 
     if (result.rows.length === 0) {
@@ -254,18 +254,48 @@ export class AuthService {
   async getCoachClients(coachId: string): Promise<any[]> {
     const query = `
       SELECT 
-        pd.user_id,
-        pd.first_name,
-        pd.last_name,
-        pd.email,
+        u.id as user_id,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.role,
+        u.is_active,
+        u.created_at,
+        pd.personal_id,
         pd.applicant_type,
-        pd.created_at
-      FROM personal_details pd
-      WHERE pd.coach_id = $1
-      ORDER BY pd.created_at DESC
+        pd.phone,
+        pd.city,
+        pd.marital_status
+      FROM users u
+      LEFT JOIN personal_details pd ON u.id = pd.user_id
+      WHERE u.coach_id = $1 AND u.is_active = true AND u.role = 'CLIENT'
+      ORDER BY u.created_at DESC
     `;
     
     const result = await pool.query(query, [coachId]);
+    return result.rows;
+  }
+
+  // Get all coaches (for admin to see available coaches)
+  async getAllCoaches(): Promise<any[]> {
+    const query = `
+      SELECT 
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.role,
+        u.is_active,
+        u.created_at,
+        COUNT(clients.id) as client_count
+      FROM users u
+      LEFT JOIN users clients ON u.id = clients.coach_id AND clients.is_active = true AND clients.role = 'CLIENT'
+      WHERE u.role = 'COACH' AND u.is_active = true
+      GROUP BY u.id, u.first_name, u.last_name, u.email, u.role, u.is_active, u.created_at
+      ORDER BY u.created_at DESC
+    `;
+    
+    const result = await pool.query(query);
     return result.rows;
   }
 } 

@@ -204,6 +204,7 @@ export class AuthController {
   }
 
   // GET /api/auth/me/clients (for coaches to see their clients)
+  // GET /api/auth/clients/:coachId (for admins to see any coach's clients)
   static async getMyClients(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
@@ -227,12 +228,48 @@ export class AuthController {
         return;
       }
 
-      const clients = await authService.getCoachClients(req.user.userId);
+      // Determine which coach's clients to fetch
+      const targetCoachId = req.params.coachId || req.user.userId;
+
+      // If requesting another coach's clients, only admins can do this
+      if (targetCoachId !== req.user.userId && req.user.role !== UserRole.ADMIN) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Access denied. Only admins can view other coaches\' clients.',
+          error: 'Insufficient permissions'
+        };
+        res.status(403).json(response);
+        return;
+      }
+
+      // Verify the target coach exists and has COACH role
+      const targetCoach = await authService.getUserById(targetCoachId);
+      if (!targetCoach || targetCoach.role !== UserRole.COACH) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Coach not found or invalid role',
+          error: 'The specified coach ID does not exist or is not a coach'
+        };
+        res.status(404).json(response);
+        return;
+      }
+
+      const clientsData = await authService.getCoachClients(targetCoachId);
       
       const response: ApiResponse = {
         success: true,
         message: 'Clients retrieved successfully',
-        data: clients
+        data: {
+          coach: {
+            id: targetCoach.id,
+            first_name: targetCoach.first_name,
+            last_name: targetCoach.last_name,
+            email: targetCoach.email,
+            role: targetCoach.role
+          },
+          clients: clientsData,
+          total_clients: clientsData.length
+        }
       };
       
       res.status(200).json(response);
@@ -240,6 +277,52 @@ export class AuthController {
       const response: ApiResponse = {
         success: false,
         message: 'Failed to get clients',
+        error: error.message
+      };
+      res.status(500).json(response);
+    }
+  }
+
+  // GET /api/auth/coaches (for admins to see all coaches)
+  static async getAllCoaches(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Authentication required',
+          error: 'No user information available'
+        };
+        res.status(401).json(response);
+        return;
+      }
+
+      // Only admins can access this endpoint
+      if (req.user.role !== UserRole.ADMIN) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Access denied. Only admins can view coach lists.',
+          error: 'Insufficient permissions'
+        };
+        res.status(403).json(response);
+        return;
+      }
+
+      const coaches = await authService.getAllCoaches();
+      
+      const response: ApiResponse = {
+        success: true,
+        message: 'Coaches retrieved successfully',
+        data: {
+          coaches,
+          total_coaches: coaches.length
+        }
+      };
+      
+      res.status(200).json(response);
+    } catch (error: any) {
+      const response: ApiResponse = {
+        success: false,
+        message: 'Failed to get coaches',
         error: error.message
       };
       res.status(500).json(response);

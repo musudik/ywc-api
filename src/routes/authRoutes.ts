@@ -39,6 +39,20 @@ router.get(
   AuthController.getMyClients
 );
 
+// GET /api/auth/clients/:coachId - Get specific coach's clients (admin only)
+router.get(
+  '/clients/:coachId',
+  authenticate,
+  AuthController.getMyClients
+);
+
+// GET /api/auth/coaches - Get all coaches (admin only)
+router.get(
+  '/coaches',
+  authenticate,
+  AuthController.getAllCoaches
+);
+
 // POST /api/auth/logout - Logout user
 router.post(
   '/logout',
