@@ -22,7 +22,7 @@ router.get(
 // GET /api/expenses/user/:userId - Get expenses by user ID
 // Note: This specific route must come BEFORE the generic /:id route
 router.get(
-  '/:userId',
+  '/user/:userId',
   authenticate,
   expensesController.getExpensesDetailsByUserId.bind(expensesController)
 );
