@@ -15,6 +15,7 @@ import familyMemberRoutes from "./routes/familyMemberRoutes";
 import formConfigurationRoutes from "./routes/formConfigurationRoutes";
 import formSubmissionRoutes from "./routes/formSubmissionRoutes";
 import personRoutes from "./routes/personRoutes";
+import directRoutes from "./routes/directRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -101,7 +102,7 @@ app.use("/api/form-configurations", formConfigurationRoutes);
 app.use("/api/form-submissions", formSubmissionRoutes);
 app.use("/api/person", personRoutes);
 app.use("/api/user", personRoutes);
-
+app.use("/api/direct", directRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
