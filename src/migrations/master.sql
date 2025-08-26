@@ -203,6 +203,37 @@ CREATE TABLE IF NOT EXISTS form_documents (
     CONSTRAINT unique_form_document UNIQUE (form_submission_id, document_id, applicant_type)
 );
 
+-- Online Registrations Table (Direct submissions without authentication)
+CREATE TABLE IF NOT EXISTS online_registrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    applicant_type VARCHAR(50) NOT NULL DEFAULT 'PrimaryApplicant',
+    salutation VARCHAR(10),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    street VARCHAR(255),
+    house_number VARCHAR(20),
+    postal_code VARCHAR(20),
+    city VARCHAR(100),
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    whatsapp VARCHAR(20),
+    marital_status VARCHAR(50),
+    birth_date DATE,
+    birth_place VARCHAR(100),
+    nationality VARCHAR(100),
+    residence_permit VARCHAR(100),
+    eu_citizen BOOLEAN DEFAULT false,
+    tax_id VARCHAR(50),
+    iban VARCHAR(34),
+    housing VARCHAR(100),
+    coach VARCHAR(255), -- Optional coach field
+    registration_data JSONB, -- Store complete form data as JSON
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
 -- =====================================
 -- INDEXES FOR PERFORMANCE
 -- =====================================
@@ -252,6 +283,11 @@ CREATE INDEX IF NOT EXISTS idx_form_documents_uploaded_at ON form_documents(uplo
 CREATE INDEX IF NOT EXISTS idx_form_documents_document_id ON form_documents(document_id);
 CREATE INDEX IF NOT EXISTS idx_form_documents_applicant_type ON form_documents(applicant_type);
 
+-- Online registrations indexes
+CREATE INDEX IF NOT EXISTS idx_online_registrations_email ON online_registrations(email);
+CREATE INDEX IF NOT EXISTS idx_online_registrations_status ON online_registrations(status);
+CREATE INDEX IF NOT EXISTS idx_online_registrations_created_at ON online_registrations(created_at);
+CREATE INDEX IF NOT EXISTS idx_online_registrations_coach ON online_registrations(coach);
 -- =====================================
 -- TRIGGERS FOR UPDATED_AT
 -- =====================================
@@ -277,6 +313,7 @@ CREATE TRIGGER update_liabilities_updated_at BEFORE UPDATE ON liabilities FOR EA
 CREATE TRIGGER update_form_configurations_updated_at BEFORE UPDATE ON form_configurations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_form_submissions_updated_at BEFORE UPDATE ON form_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_form_documents_updated_at BEFORE UPDATE ON form_documents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_online_registrations_updated_at BEFORE UPDATE ON online_registrations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================
 -- COMMENTS FOR DOCUMENTATION
@@ -325,6 +362,10 @@ COMMENT ON COLUMN form_documents.document_id IS 'Document type identifier (e.g.,
 COMMENT ON COLUMN form_documents.firebase_path IS 'Full path to the document in Firebase/S3 storage';
 COMMENT ON COLUMN form_documents.upload_status IS 'Current upload status: pending, uploading, uploaded, failed, deleted';
 COMMENT ON COLUMN form_documents.uploaded_at IS 'Timestamp when the document was successfully uploaded';
+COMMENT ON TABLE online_registrations IS 'Direct form submissions without user authentication';
+COMMENT ON COLUMN online_registrations.coach IS 'Optional coach name or identifier';
+COMMENT ON COLUMN online_registrations.registration_data IS 'Complete form data stored as JSON';
+COMMENT ON COLUMN online_registrations.status IS 'Registration status: pending, processed, approved, rejected';
 
 -- =====================================
 -- SEED DATA
