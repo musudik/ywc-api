@@ -146,7 +146,7 @@ function createDatabase(adminUrl, databaseName) {
 function executeMasterSql() {
   log('📄 Loading and executing master.sql schema...', 'cyan');
   
-  const masterSqlPath = path.join(__dirname, 'src', 'models', 'master.sql');
+  const masterSqlPath = path.join(__dirname, 'src', 'migrations', 'master.sql');
   
   if (!fs.existsSync(masterSqlPath)) {
     throw new Error(`Master SQL file not found: ${masterSqlPath}`);
