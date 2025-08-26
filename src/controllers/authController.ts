@@ -25,10 +25,15 @@ export class AuthController {
 
   // POST /api/auth/login
   static async login(req: Request, res: Response): Promise<void> {
+    console.log('🔐 AuthController: Login attempt started');
+    console.log('🔐 AuthController: Request body:', { email: req.body.email, passwordLength: req.body.password?.length });
+    console.log('🔐 AuthController: Request headers:', req.headers);
+    
     try {
       // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('❌ AuthController: Validation failed:', errors.array());
         const response: ApiResponse = {
           success: false,
           message: 'Validation failed',
@@ -38,8 +43,16 @@ export class AuthController {
         return;
       }
 
+      console.log('✅ AuthController: Validation passed, calling authService.login');
       const { email, password } = req.body;
       const authResponse = await authService.login({ email, password });
+      
+      console.log('✅ AuthController: Login successful, user:', { 
+        id: authResponse.user.id, 
+        email: authResponse.user.email, 
+        role: authResponse.user.role 
+      });
+      console.log('✅ AuthController: Token generated, length:', authResponse.token.length);
       
       const response: ApiResponse = {
         success: true,
@@ -49,6 +62,9 @@ export class AuthController {
       
       res.status(200).json(response);
     } catch (error: any) {
+      console.log('❌ AuthController: Login failed with error:', error.message);
+      console.log('❌ AuthController: Error stack:', error.stack);
+      
       const response: ApiResponse = {
         success: false,
         message: 'Login failed',
@@ -354,4 +370,4 @@ export class AuthController {
       res.status(500).json(response);
     }
   }
-} 
+}

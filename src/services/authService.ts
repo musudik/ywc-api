@@ -59,49 +59,91 @@ export class AuthService {
 
   // Compare password
   async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
-    return await bcrypt.compare(password, hashedPassword);
+    console.log('🔐 AuthService: comparePassword called');
+    console.log('🔐 AuthService: Plain password length:', password.length);
+    console.log('🔐 AuthService: Hashed password length:', hashedPassword.length);
+    console.log('🔐 AuthService: Hashed password starts with:', hashedPassword.substring(0, 10));
+    console.log('🔐 AuthService: Plain password:', password);
+    
+    try {
+      const result = await bcrypt.compare(password, hashedPassword);
+      console.log('🔐 AuthService: bcrypt.compare result:', result);
+      return result;
+    } catch (error: any) {
+      console.log('❌ AuthService: bcrypt.compare error:', error.message);
+      return false;
+    }
   }
 
   // Login user
   async login(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log('🔐 AuthService: Login attempt for email:', credentials.email);
     const { email, password } = credentials;
 
-    // Find user by email
-    const query = 'SELECT * FROM users WHERE email = $1 AND is_active = true';
-    const result = await pool.query(query, [email]);
+    try {
+      // Find user by email
+      console.log('🔐 AuthService: Querying database for user...');
+      const query = 'SELECT * FROM users WHERE email = $1 AND is_active = true';
+      const result = await pool.query(query, [email]);
+      
+      console.log('🔐 AuthService: Database query result - rows found:', result.rows.length);
 
-    if (result.rows.length === 0) {
-      throw new Error('Invalid email or password');
+      if (result.rows.length === 0) {
+        console.log('❌ AuthService: No user found with email:', email);
+        throw new Error('Invalid email or password');
+      }
+
+      const user = result.rows[0];
+      console.log('✅ AuthService: User found:', { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role, 
+        is_active: user.is_active 
+      });
+
+      // Verify password
+      console.log('🔐 AuthService: Verifying password...');
+      const isPasswordValid = await this.comparePassword(password, user.password);
+      console.log('🔐 AuthService: Password verification result:', isPasswordValid);
+      
+      if (!isPasswordValid) {
+        console.log('❌ AuthService: Invalid password for user:', email);
+        throw new Error('Invalid email or password');
+      }
+
+      // Generate token
+      console.log('🔐 AuthService: Generating JWT token...');
+      const tokenPayload: TokenPayload = {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        coach_id: user.coach_id
+      };
+      
+      console.log('🔐 AuthService: Token payload:', tokenPayload);
+      const token = this.generateToken(tokenPayload);
+      console.log('✅ AuthService: Token generated successfully, length:', token.length);
+      console.log('🔐 AuthService: JWT_SECRET exists:', !!this.JWT_SECRET);
+      console.log('🔐 AuthService: JWT_EXPIRES_IN:', this.JWT_EXPIRES_IN);
+
+      // Remove password from user object
+      const { password: _, ...userWithoutPassword } = user;
+
+      const authResponse = {
+        user: userWithoutPassword,
+        token,
+        expiresIn: this.JWT_EXPIRES_IN
+      };
+      
+      console.log('✅ AuthService: Login successful, returning response');
+      return authResponse;
+    } catch (error: any) {
+      console.log('❌ AuthService: Login error:', error.message);
+      console.log('❌ AuthService: Error stack:', error.stack);
+      throw error;
     }
-
-    const user = result.rows[0];
-
-    // Verify password
-    const isPasswordValid = await this.comparePassword(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
-
-    // Generate token
-    const tokenPayload: TokenPayload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      coach_id: user.coach_id
-    };
-
-    const token = this.generateToken(tokenPayload);
-
-    // Remove password from user object
-    const { password: _, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword,
-      token,
-      expiresIn: this.JWT_EXPIRES_IN
-    };
   }
 
   // Register new user
@@ -298,4 +340,4 @@ export class AuthService {
     const result = await pool.query(query);
     return result.rows;
   }
-} 
+}

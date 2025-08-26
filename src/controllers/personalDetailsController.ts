@@ -371,4 +371,133 @@ export class PersonalDetailsController {
       res.status(500).json(response);
     }
   }
-} 
+
+  // Validation rules for registration ID parameter
+  static registrationIdValidationRules = [
+    param('registrationId').isUUID().withMessage('Valid registration ID is required')
+  ];
+
+  // Validation rules for updating registration status
+  static updateRegistrationStatusValidationRules = [
+    param('registrationId').isUUID().withMessage('Valid registration ID is required'),
+    body('status').isIn(['pending', 'approved', 'rejected', 'processing']).withMessage('Status must be one of: pending, approved, rejected, processing')
+  ];
+
+  // GET /api/registrations - Get all online registrations
+  static async getAllRegistrations(req: Request, res: Response): Promise<void> {
+    try {
+      const { status, coach } = req.query;
+      
+      const filters: any = {};
+      if (status) filters.status = status;
+      if (coach) filters.coach = coach;
+
+      const registrations = await onlineRegistrationService.getAllRegistrations(filters);
+      
+      const response: ApiResponse = {
+        success: true,
+        message: 'Online registrations retrieved successfully',
+        data: registrations
+      };
+      
+      res.status(200).json(response);
+    } catch (error: any) {
+      const response: ApiResponse = {
+        success: false,
+        message: 'Failed to get online registrations',
+        error: error.message
+      };
+      res.status(500).json(response);
+    }
+  }
+
+  // GET /api/direct/registrations/:registrationId - Get registration by ID
+  static async getRegistrationById(req: Request, res: Response): Promise<void> {
+    try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Validation failed',
+          error: errors.array().map((err: ValidationError) => err.msg).join(', ')
+        };
+        res.status(400).json(response);
+        return;
+      }
+
+      const { registrationId } = req.params;
+      const registration = await onlineRegistrationService.getRegistrationById(registrationId);
+      
+      if (!registration) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Registration not found'
+        };
+        res.status(404).json(response);
+        return;
+      }
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Registration retrieved successfully',
+        data: registration
+      };
+      
+      res.status(200).json(response);
+    } catch (error: any) {
+      const response: ApiResponse = {
+        success: false,
+        message: 'Failed to get registration',
+        error: error.message
+      };
+      res.status(500).json(response);
+    }
+  }
+
+  // PUT /api/direct/registrations/:registrationId/status - Update registration status
+  static async updateRegistrationStatus(req: Request, res: Response): Promise<void> {
+    try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Validation failed',
+          error: errors.array().map((err: ValidationError) => err.msg).join(', ')
+        };
+        res.status(400).json(response);
+        return;
+      }
+
+      const { registrationId } = req.params;
+      const { status } = req.body;
+      
+      const updatedRegistration = await onlineRegistrationService.updateRegistrationStatus(registrationId, status);
+      
+      if (!updatedRegistration) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Registration not found'
+        };
+        res.status(404).json(response);
+        return;
+      }
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Registration status updated successfully',
+        data: updatedRegistration
+      };
+      
+      res.status(200).json(response);
+    } catch (error: any) {
+      const response: ApiResponse = {
+        success: false,
+        message: 'Failed to update registration status',
+        error: error.message
+      };
+      res.status(500).json(response);
+    }
+  }
+}

@@ -23,10 +23,16 @@ const authService = new AuthService();
 
 // Basic authentication middleware
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+  console.log('🔐 AuthMiddleware: Authentication check started');
+  console.log('🔐 AuthMiddleware: Request URL:', req.url);
+  console.log('🔐 AuthMiddleware: Request method:', req.method);
+  
   try {
     const authHeader = req.headers.authorization;
+    console.log('🔐 AuthMiddleware: Authorization header:', authHeader ? 'Present' : 'Missing');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ AuthMiddleware: No valid authorization header found');
       res.status(401).json({
         success: false,
         message: 'Access denied. No token provided or invalid format.',
@@ -36,12 +42,21 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    console.log('🔐 AuthMiddleware: Token extracted, length:', token.length);
     
     try {
+      console.log('🔐 AuthMiddleware: Verifying token...');
       const decoded = authService.verifyToken(token);
+      console.log('✅ AuthMiddleware: Token verified successfully, user:', {
+        userId: decoded.userId,
+        email: decoded.email,
+        role: decoded.role
+      });
+      
       req.user = decoded;
       next();
-    } catch (tokenError) {
+    } catch (tokenError: any) {
+      console.log('❌ AuthMiddleware: Token verification failed:', tokenError.message);
       res.status(401).json({
         success: false,
         message: 'Invalid or expired token',
@@ -49,7 +64,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
       });
       return;
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.log('❌ AuthMiddleware: Unexpected error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Authentication error',
@@ -202,4 +218,4 @@ export const checkPersonalDetailsManagement = async (req: Request, res: Response
       error: 'Internal server error'
     });
   }
-}; 
+};
