@@ -161,10 +161,10 @@ GRANT ALL PRIVILEGES ON DATABASE yourwealthcoach TO yourwealthcoach;
 2. **Run Master Schema:**
 ```bash
 # Using DATABASE_URL
-psql $DATABASE_URL -f src/models/master.sql
+psql $DATABASE_URL -f src/migrations/master.sql
 
 # Or using individual connection parameters
-psql -U yourwealthcoach -d yourwealthcoach -f src/models/master.sql
+psql -U yourwealthcoach -d yourwealthcoach -f src/migrations/master.sql
 ```
 
 ### What Gets Created
@@ -274,7 +274,7 @@ npm run test:financial-data
 
 ### Adding New Features
 
-1. **Models**: Update `src/models/master.sql` with new tables
+1. **Models**: Update `src/migrations/master.sql` with new tables
 2. **Types**: Add TypeScript interfaces in `src/types/index.ts`
 3. **Services**: Implement SQL queries in `src/services/`
 4. **Controllers**: Add validation and business logic in `src/controllers/`

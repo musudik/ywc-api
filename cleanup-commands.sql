@@ -62,7 +62,7 @@ SELECT extname FROM pg_extension;
 -- AFTER CLEANUP
 -- =====================================
 -- After running cleanup, execute the master schema:
--- \i src/models/master.sql
+-- \i src/migrations/master.sql
 -- 
 -- Or using psql command line:
--- psql -U ywc -d ywc -f src/models/master.sql 
+-- psql -U ywc -d ywc -f src/migrations/master.sql 

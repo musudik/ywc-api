@@ -62,14 +62,14 @@ Execute the master.sql file to create all tables, indexes, triggers, and seed da
 
 ```bash
 # Method 1: Using psql command line
-psql -U ywc_user -d ywc_financial_forms -f src/models/master.sql
+psql -U ywc_user -d ywc_financial_forms -f src/migrations/master.sql
 
 # Method 2: Using environment variable
-psql $DATABASE_URL -f src/models/master.sql
+psql $DATABASE_URL -f src/migrations/master.sql
 
 # Method 3: Interactive psql session
 psql -U ywc_user -d ywc_financial_forms
-\i src/models/master.sql
+\i src/migrations/master.sql
 ```
 
 #### 3. Verify Setup
@@ -247,7 +247,7 @@ psql -U postgres -c "CREATE DATABASE ywc_financial_forms;"
 psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ywc_financial_forms TO ywc_user;"
 
 # Re-run master schema
-psql $DATABASE_URL -f src/models/master.sql
+psql $DATABASE_URL -f src/migrations/master.sql
 ```
 
 ### Performance Monitoring
